@@ -10,24 +10,53 @@
 library(shiny)
 
 # Define UI for application that draws a histogram
-fluidPage(
 
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
+navbarPage(
+  "This is the shell of our shiny",
+  tabPanel("Max's widget",
+           fluidPage(
+             div(
+               selectInput("his input here",
+                           "Max's Widget",
+                           choices = c("What",
+                                       "do",
+                                       "you",
+                                       "want?"))
+             )
+           )),
 
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
+  tabPanel("Abigail's widget",
+           fluidPage(
+             div(
+               selectInput("her_input_here",
+                           "Abigail's Widget",
+                           choices = c("What",
+                                       "do",
+                                       "you",
+                                       "want?"))
+             )
+           )),
 
-        # Show a plot of the generated distribution
-        mainPanel(
-            plotOutput("distPlot")
-        )
-    )
+  tabPanel("Dustin's widget",
+           fluidPage(
+             div(
+               selectInput("his input here",
+                           "Dustin's Widget",
+                           choices = c("What",
+                                       "do",
+                                       "you",
+                                       "want?"))
+             )
+           )),
+
+  tabPanel("Group widget",
+           fluidPage(
+             div(
+               selectInput("his input here",
+                           "Dustin's Widget",
+                           choices = c("Survey Sentiment Analysis",
+                                       "Keywords for Cultural Sites"))
+             )
+           )),
+  collapsible = TRUE
 )
