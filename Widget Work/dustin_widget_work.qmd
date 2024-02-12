@@ -1,27 +1,119 @@
 ---
 title: "Dustin's Work"
 author: "Dustin"
-format: html
+format: 
+  html:
+    code-fold: show
+    toc: true
+    number-sections: true
+    embed-resources: true
 editor: visual
+execute:
+  echo: true
+  message: false
+  warning: false
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+#| message: false
+# Loading all my packages 
+library(tidyverse)
+library(here)
+library(sf) # Vector spatial data
+library(terra) # Raster spatial data
+library(tidyterra) # For rasters in GGplot
+library(gstat)
+library(stars)
+library(broom)
+library(tmap)
+library(spatstat)
+library(patchwork)
+library(stringr)
+rm(list = ls())
 ```
 
-You can add options to executable code like this
-
 ```{r}
-#| echo: false
-2 * 2
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  stars, # spatiotemporal data handling
+  terra, # raster data handling
+  raster, # raster data handling
+  sf, # vector data handling
+  dplyr, # data wrangling
+  stringr, # string manipulation
+  lubridate, # dates handling
+  data.table, # data wrangling
+  tidyr, # reshape
+  tidyUSDA, # download USDA NASS data
+  keyring, # API key management
+  FedData, # download Daymet data
+  daymetr, # download Daymet data
+  ggplot2, # make maps
+  tmap, # make maps
+  future.apply, # parallel processing
+  CropScapeR, # download CDL data
+  prism, # download PRISM data
+  exactextractr # extract raster values to sf
+)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+data <- st_read("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/ahupuaa/ahupuaa.shp")
+
+data_sf <- st_as_sf(data)
+
+data_oahu <- data_sf %>% 
+  tidyterra::filter(mokupuni == "O'ahu")
+
+plot(data)
+```
+
+```{r}
+food_file <- here("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/food_priority1.tif")
+
+food_rs <- stack("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/food_priority1.tif")
+  
+food_data <- rast(food_file)
+
+#-- convert to dataframe --#
+
+food_df <- as.data.frame(food_data, xy = TRUE) %>% 
+  na.omit() %>% 
+  mutate(Food = as.character(Food))
+
+food_df_plot <- ggplot(data = food_df) + 
+  geom_raster(aes(x = x, y = y, fill = Food)) + 
+  scale_fill_manual(values = c("green", "red")) + 
+  coord_equal() + 
+  theme_dark()
+
+food_df_plot
+  
+
+# f <- plot(food_data)
+# rect(par("usr")[1], par("usr")[3],
+#      par("usr")[2], par("usr")[4],
+#      col = "#8F8F8F")
+# par(new = TRUE)
+# f2 <- plot(food_data)
+```
+
+```{r}
+carbon_file <- here("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/carbon_priority2.tif")
+
+carbon_data <- rast(carbon_file)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
