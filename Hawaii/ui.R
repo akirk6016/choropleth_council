@@ -25,7 +25,7 @@ navbarPage(
              )
            )),
 
-  tabPanel("Abigail's widget",
+  tabPanel("Abigail's Cost Tradeoffs Widget",
            fluidPage(
              div(
                selectInput("her_input_here",
