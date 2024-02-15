@@ -17,6 +17,15 @@ navbarPage(
 
   theme = bslib::bs_theme(bootswatch = "morph"),
 
+  tabPanel("Overview",
+           p('The purpose of this shiny app is to visual land use prioritization scenarios
+             in Hawaii. We will use various scenarios to map how prioritiziation changes based
+             on the order of goal implementation. We will also use spatial data of priority areas
+             identfied by residents to compare how the modelled scenarios compare to how people
+             perceive priority needs.'),
+
+           ),
+
   tabPanel("Max's widget",
            fluidPage(
              div(

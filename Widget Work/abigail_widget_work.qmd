@@ -1,0 +1,82 @@
+---
+title: "Abigail's Widget Work"
+author: "Abigail"
+format: 
+  html:
+    code-fold: show
+    toc: true
+    number-sections: true
+    embed-resources: true
+editor: visual
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r}
+#| message: false
+# Loading all my packages 
+library(tidyverse)
+library(here)
+library(sf) # Vector spatial data
+library(terra) # Raster spatial data
+library(tidyterra) # For rasters in GGplot
+library(gstat)
+library(stars)
+library(broom)
+library(tmap)
+library(spatstat)
+library(patchwork)
+library(stringr)
+rm(list = ls())
+```
+
+```{r}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  stars, # spatiotemporal data handling
+  terra, # raster data handling
+  raster, # raster data handling
+  sf, # vector data handling
+  dplyr, # data wrangling
+  stringr, # string manipulation
+  lubridate, # dates handling
+  data.table, # data wrangling
+  tidyr, # reshape
+  tidyUSDA, # download USDA NASS data
+  keyring, # API key management
+  FedData, # download Daymet data
+  daymetr, # download Daymet data
+  ggplot2, # make maps
+  tmap, # make maps
+  future.apply, # parallel processing
+  CropScapeR, # download CDL data
+  prism, # download PRISM data
+  exactextractr # extract raster values to sf
+)
+```
+
+```{r}
+food_raw_file <- here("data/food_production_raw.tif")
+food_raw_data <- rast(food_raw_file)
+
+carbon_raw_file <- here("data/carbon_sequestration_raw.tif")
+carbon_raw_data <- rast(carbon_raw_file)
+
+carbon_raw_df <- as.data.frame(carbon_raw_data)
+```
+
+```{r}
+food_file <- here("data/food_priority1.tif")
+food_rs <- stack("data/food_priority1.tif")
+food_data <- rast(food_file)
+
+carbon_file <- here("data/carbon_priority2.tif")
+carbon_data <- rast(carbon_file)
+
+
+
+carbon_df <- as.data.frame(carbon_data)
+```
+
