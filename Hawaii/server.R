@@ -8,9 +8,14 @@
 #
 
 library(shiny)
+library(bslib)
 
 # Define server logic required to draw a histogram
 function(input, output, session) {
+
+    # You can access the values of the check box widget (as a vector)
+    # with input$checkGroup,
+    output$value <- renderPrint({ input$checkGroup})
 
     output$Plotoutput <- renderPlot({
 

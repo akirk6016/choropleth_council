@@ -8,11 +8,15 @@
 #
 
 library(shiny)
+library(bslib)
 
 # Define UI for application that draws a histogram
 
 navbarPage(
   "This is the shell of our shiny",
+
+  theme = bslib::bs_theme(bootswatch = "morph"),
+
   tabPanel("Max's widget",
            fluidPage(
              div(
@@ -22,8 +26,19 @@ navbarPage(
                                        "do",
                                        "you",
                                        "want?"))
-             )
-           )),
+             ),
+
+             checkboxGroupInput("checkGroup", label = h3("Model Parameters"),
+                                choices = list("Food Production" = 1,
+                                               "Carbon Storage" = 2,
+                                               "Choice 3" = 3),
+                                selected = 1),
+
+
+             hr(),
+             fluidRow(column(3, verbatimTextOutput("value")))
+
+           )), #end of fluidPage
 
   tabPanel("Abigail's Cost Tradeoffs Widget",
            fluidPage(
