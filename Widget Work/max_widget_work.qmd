@@ -1,0 +1,63 @@
+---
+title: "Max's Widget Work"
+author: "Max Pepperdine"
+format: html
+editor: visual
+---
+
+## Load packages
+
+```{r}
+library(tidyverse)
+library(here)
+library(sf) #for working with vector spatial data:
+library(terra) #for working with rasters:
+library(tidyterra)
+library(tmap) #for creating cool/interactive maps
+```
+
+## Ahupuaa's
+
+### Load shapefile
+
+```{r}
+ahupuaa_raw_sf <- read_sf(here("data/spatial_stuff/ahupuaa/ahupuaa.shp"))
+
+#basic static plot of ahupuaa boundaries
+ggplot() +
+  geom_sf(data = ahupuaa_raw_sf)
+```
+
+## Food Priority & Carbon Storage
+
+### Load rasters
+
+```{r}
+food_file <- here("data/food_priority1.tif")
+food_data <- rast(food_file)
+
+carbon_file <- here("data/carbon_priority2.tif")
+carbon_data <- rast(carbon_file)
+```
+
+### Start Plotting
+
+```{r}
+#basic static plots
+plot(food_data)
+plot(carbon_data)
+
+# ggplot() +
+#   geom_sf(data = ahupuaa_raw_sf) +
+#   geom_raster(data = carbon_data) +
+#   geom_raster(data = food_data)
+
+
+#interactive mapping
+tmap_mode(mode = "view")
+
+tm_shape(ahupuaa_raw_sf) + 
+  tm_borders()
+  
+
+```
