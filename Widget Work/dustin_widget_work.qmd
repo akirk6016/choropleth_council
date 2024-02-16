@@ -61,12 +61,17 @@ pacman::p_load(
 ```{r}
 data <- st_read("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/ahupuaa/ahupuaa.shp")
 
-data_sf <- st_as_sf(data)
+data_sf <- st_as_sf(data) # --> EPSG 3750
 
-data_oahu <- data_sf %>% 
+write_sf(data_sf, here("data/ahupuaa", "ahupuaa.gpkg"))
+
+ahupuaa_new_sf <- read_sf(here("data/ahupuaa", "ahupuaa.gpkg")) %>% 
+  janitor::clean_names()
+
+data_oahu <- ahupuaa_new_sf %>% 
   tidyterra::filter(mokupuni == "O'ahu")
 
-plot(data)
+# plot(data)
 ```
 
 ```{r}
