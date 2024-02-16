@@ -46,7 +46,14 @@ navbarPage(
 
 
              hr(),
-             fluidRow(column(3, verbatimTextOutput("value")))
+             fluidRow(column(3, verbatimTextOutput("value"))
+
+              ),
+
+            mainPanel("Title",
+                      plotOutput(outputId = "placeholder_plot")
+
+              )
 
            )), #end of fluidPage
 

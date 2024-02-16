@@ -21,7 +21,7 @@ library(tmap) #for creating cool/interactive maps
 ### Load shapefile
 
 ```{r}
-ahupuaa_raw_sf <- read_sf(here("data/spatial_stuff/ahupuaa/ahupuaa.shp"))
+ahupuaa_raw_sf <- read_sf(here("data/ahupuaa/ahupuaa.shp"))
 
 #basic static plot of ahupuaa boundaries
 ggplot() +

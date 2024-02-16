@@ -17,6 +17,12 @@ function(input, output, session) {
     # with input$checkGroup,
     output$value <- renderPrint({ input$checkGroup})
 
+    output$placeholder_plot <- renderPlot({
+      ggplot()+
+        geom_sf(data = ahupuaa_raw_sf) +
+        theme_bw()
+    }) #end placeholder_plot for max's widget
+
     output$Plotoutput <- renderPlot({
 
         # generate bins based on input$bins from ui.R
