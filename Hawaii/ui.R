@@ -10,6 +10,7 @@
 library(shiny)
 library(bslib)
 
+
 # Define UI for application that draws a histogram
 
 navbarPage(
