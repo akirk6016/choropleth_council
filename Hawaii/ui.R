@@ -9,7 +9,7 @@
 
 library(shiny)
 library(bslib)
-
+library(leaflet)
 
 # Define UI for application that draws a histogram
 
@@ -72,13 +72,21 @@ navbarPage(
   tabPanel("Dustin's widget",
            fluidPage(
              div(
-               selectInput("his input here",
+               selectInput("data",
                            "Dustin's Widget",
-                           choices = c("What",
-                                       "do",
-                                       "you",
-                                       "want?"))
-             )
+                           choices = c("Ni'ihau",
+                                       "Kaua'i",
+                                       "Moloka'i",
+                                       "O'ahu",
+                                       "Hawai'i",
+                                       "Molokini",
+                                       "Kaho'olawe",
+                                       "Maui",
+                                       "Lana'i"))
+
+             ),
+             mainPanel("Title",
+                       plotOutput(outputId = "dustin_plot"))
            )),
 
   tabPanel("Group widget",

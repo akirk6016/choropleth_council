@@ -9,6 +9,7 @@
 
 library(shiny)
 library(bslib)
+library(leaflet)
 
 # Define server logic required to draw a histogram
 function(input, output, session) {
@@ -34,6 +35,20 @@ function(input, output, session) {
              xlab = 'Waiting time to next eruption (in mins)',
              main = 'Histogram of waiting times')
 
+    })
+
+    reactive_map <- reactive({
+      filter_selection <- input$data
+
+      subset_ahupuaa <- ahupuaa_island[ahupuaa_island$island == filter_selection, ]
+
+      return(subset_ahupuaa)
+    })
+
+    output$dustin_plot <- renderPlot({
+      ggplot() +
+        geom_sf(data = reactive_map()) +
+        theme_bw()
     })
 
 }

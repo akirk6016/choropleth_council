@@ -59,27 +59,56 @@ pacman::p_load(
 
 
 ```{r}
-data <- st_read("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/ahupuaa/ahupuaa.shp")
+data <- st_read(dsn = here::here("data", "ahupuaa","ahupuaa.shp"), 
+                layer = "ahupuaa")
+
+st_layers(dsn = here::here("data", "ahupuaa","ahupuaa.shp"))
 
 data_sf <- st_as_sf(data) # --> EPSG 3750
 
-write_sf(data_sf, here("data/ahupuaa", "ahupuaa.gpkg"))
-
 ahupuaa_new_sf <- read_sf(here("data/ahupuaa", "ahupuaa.gpkg")) %>% 
   janitor::clean_names()
+  
+ahupuaa_new_sf <- st_transform(ahupuaa_new_sf, 4326)
 
-data_oahu <- ahupuaa_new_sf %>% 
-  tidyterra::filter(mokupuni == "O'ahu")
+st_crs(ahupuaa_new_sf)
 
-# plot(data)
+
+ahupuaa_sf_clean <- ahupuaa_new_sf %>% 
+  mutate(island = case_when(
+    str_detect(mokupuni, "ahu") ~ "O'ahu",
+    str_detect(mokupuni, "Hawa") ~ "Hawai'i",
+    str_detect(mokupuni, "ihau") ~ "Ni'ihau",
+    str_detect(mokupuni, "Kaua") ~ "Kaua'i",
+    str_detect(mokupuni, "Moloka") ~ "Moloka'i",
+    str_detect(mokupuni, "Molokini") ~ "Molokini",
+    str_detect(mokupuni, "Kaho") ~ "Kaho'olawe",
+    str_detect(mokupuni, "Maui") ~ "Maui",
+    str_detect(mokupuni, "na") ~ "Lana'i"
+  ))
+
+ahupuaa_island <- ahupuaa_sf_clean %>% 
+  dplyr::select(island, shape_leng, shape_area)
+
+ahupuaa_rast <- rast(ahupuaa_island)
+
+ahupuaa_rast_df <- as.data.frame(ahupuaa_rast, xy = TRUE) %>% 
+  na.omit()
+
+plot(ahupuaa_island)
+
+ggplot() + 
+  geom_sf(data = ahupuaa_island)
 ```
 
 ```{r}
 food_file <- here("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/food_priority1.tif")
 
 food_rs <- stack("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/food_priority1.tif")
-  
+
 food_data <- rast(food_file)
+
+food_sf <- st_as_sf(food_data)
 
 #-- convert to dataframe --#
 
@@ -109,6 +138,19 @@ carbon_file <- here("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth
 
 carbon_data <- rast(carbon_file)
 
+#-- convert to dataframe --#
+
+carbon_df <- as.data.frame(carbon_data, xy = TRUE) %>% 
+  na.omit() %>% 
+  mutate(Carbon = as.character(Carbon))
+
+carbon_df_plot <- ggplot(data = carbon_df) + 
+  geom_raster(aes(x = x, y = y, fill = Carbon)) + 
+  scale_fill_manual(values = c("green", "red")) + 
+  coord_equal() + 
+  theme_dark()
+
+carbon_df_plot
 
 ```
 
