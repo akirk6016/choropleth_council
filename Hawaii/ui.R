@@ -23,7 +23,9 @@ navbarPage(
              in Hawaii. We will use various scenarios to map how prioritiziation changes based
              on the order of goal implementation. We will also use spatial data of priority areas
              identfied by residents to compare how the modelled scenarios compare to how people
-             perceive priority needs.'),
+             perceive priority needs. Additionally, we will use interview data to conduct a sentiment
+             analysis on how residents qualified priorty areas. Further analyses will compare relative
+             costs of solutions to build a trade-off curve'),
 
            ),
 
@@ -57,16 +59,22 @@ navbarPage(
 
            )), #end of fluidPage
 
-  tabPanel("Abigail's Cost Tradeoffs Widget",
+  tabPanel("Abigail's Widget",
            fluidPage(
              div(
-               selectInput("her_input_here",
-                           "Abigail's Widget",
-                           choices = c("What",
-                                       "do",
-                                       "you",
-                                       "want?"))
+               sidebarLayout(
+                 sidebarPanel(
+               sliderInput("decimal", "Comparative Cost of Food to Carbon",
+                           min = 0, max = 3,
+                           value = 0.5, step = 0.1),
+             ),
+             mainPanel("Cost Trade-offs",
+
+                       tableOutput("abigail_plot"))
              )
+
+             )
+
            )),
 
   tabPanel("Dustin's widget",
