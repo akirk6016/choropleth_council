@@ -102,13 +102,13 @@ ggplot() +
 ```
 
 ```{r}
-food_file <- here("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/food_priority1.tif")
+food_file <- here::here("data", "food_priority1.tif")
 
-food_rs <- stack("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/food_priority1.tif")
+food_rs <- stack(here::here("data", "food_priority1.tif"))
 
 food_data <- rast(food_file)
 
-food_sf <- st_as_sf(food_data)
+# food_sf <- st_as_sf(food_data)
 
 #-- convert to dataframe --#
 
@@ -134,7 +134,7 @@ food_df_plot
 ```
 
 ```{r}
-carbon_file <- here("/Users/dustinduncan/Desktop/ESM 244/shiny_hawaii_choropleth_ak_dd_mp/data/carbon_priority2.tif")
+carbon_file <- here("data", "carbon_priority2.tif")
 
 carbon_data <- rast(carbon_file)
 
