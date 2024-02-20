@@ -73,22 +73,27 @@ ahupuaa_new_sf <- st_transform(ahupuaa_new_sf, 4326)
 
 st_crs(ahupuaa_new_sf)
 
-
 ahupuaa_sf_clean <- ahupuaa_new_sf %>% 
-  mutate(island = case_when(
-    str_detect(mokupuni, "ahu") ~ "O'ahu",
-    str_detect(mokupuni, "Hawa") ~ "Hawai'i",
-    str_detect(mokupuni, "ihau") ~ "Ni'ihau",
-    str_detect(mokupuni, "Kaua") ~ "Kaua'i",
-    str_detect(mokupuni, "Moloka") ~ "Moloka'i",
-    str_detect(mokupuni, "Molokini") ~ "Molokini",
-    str_detect(mokupuni, "Kaho") ~ "Kaho'olawe",
-    str_detect(mokupuni, "Maui") ~ "Maui",
-    str_detect(mokupuni, "na") ~ "Lana'i"
-  ))
+  mutate(moku = str_replace_all(moku, pattern = "ʻ", replacement = "'"),
+         mokupuni = str_replace_all(mokupuni, pattern = "ʻ", replacement = "'"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ʻ", replacement = "'"))
+
+
+# ahupuaa_sf_clean <- ahupuaa_new_sf %>% 
+#   mutate(island = case_when(
+#     str_detect(mokupuni, "ahu") ~ "O'ahu",
+#     str_detect(mokupuni, "Hawa") ~ "Hawai'i",
+#     str_detect(mokupuni, "ihau") ~ "Ni'ihau",
+#     str_detect(mokupuni, "Kaua") ~ "Kaua'i",
+#     str_detect(mokupuni, "Moloka") ~ "Moloka'i",
+#     str_detect(mokupuni, "Molokini") ~ "Molokini",
+#     str_detect(mokupuni, "Kaho") ~ "Kaho'olawe",
+#     str_detect(mokupuni, "Maui") ~ "Maui",
+#     str_detect(mokupuni, "na") ~ "Lana'i"
+#   ))
 
 ahupuaa_island <- ahupuaa_sf_clean %>% 
-  dplyr::select(island, shape_leng, shape_area)
+  dplyr::select(mokupuni, shape_leng, shape_area, )
 
 ahupuaa_rast <- rast(ahupuaa_island)
 
@@ -98,7 +103,7 @@ ahupuaa_rast_df <- as.data.frame(ahupuaa_rast, xy = TRUE) %>%
 plot(ahupuaa_island)
 
 ggplot() + 
-  geom_sf(data = ahupuaa_island)
+  geom_sf(data = ahupuaa_island) 
 ```
 
 ```{r}

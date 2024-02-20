@@ -90,7 +90,7 @@ navbarPage(
                                        "Molokini",
                                        "Kaho'olawe",
                                        "Maui",
-                                       "Lana'i"))
+                                       "Lāna'i"))
 
              ),
              mainPanel("Title",
