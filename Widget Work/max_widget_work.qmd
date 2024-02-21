@@ -74,6 +74,8 @@ food_sf <- st_as_sf(food_polygon)
 carbon_polygon <- as.polygons(carbon_raster)
 carbon_sf <- st_as_sf(carbon_polygon)
 
+
+#basic static plots
 ggplot() +
   geom_sf(data = ahupuaa_raw_sf) +
   geom_sf(data = carbon_sf, color = "skyblue1") +
@@ -83,6 +85,18 @@ ggplot() +
   geom_sf(data = ahupuaa_raw_sf) +
   geom_sf(data = food_sf, color = "green2") +
   theme_bw()
+
+
+# #interactive plots
+# tmap_mode(mode = "view")
+# tmap_options(check.and.fix = TRUE)
+# 
+# tm_shape(ahupuaa_raw_sf, name = "Ahupuaa") +
+#   tm_polygons(border.col = "black", legend.show = FALSE) +
+# tm_shape(food_sf) +
+#   tm_polygons(col = "green", border.col = "green") +
+# tm_shape(carbon_sf) +
+#   tm_polygons(col = "blue", border.col = "blue")
 ```
 
 
