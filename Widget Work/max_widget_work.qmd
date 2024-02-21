@@ -14,6 +14,7 @@ library(sf) #for working with vector spatial data:
 library(terra) #for working with rasters:
 library(tidyterra)
 library(tmap) #for creating cool/interactive maps
+library(maps)
 ```
 
 ## Ahupuaa's
@@ -34,10 +35,10 @@ ggplot() +
 
 ```{r}
 food_file <- here("data/food_priority1.tif")
-food_data <- rast(food_file)
+food_raster <- rast(food_file)
 
 carbon_file <- here("data/carbon_priority2.tif")
-carbon_data <- rast(carbon_file)
+carbon_raster <- rast(carbon_file)
 ```
 
 ### Start Plotting
@@ -61,3 +62,29 @@ tm_shape(ahupuaa_raw_sf) +
   
 
 ```
+
+### Convert Rasters to Polygons & sf Objects
+
+```{r}
+#convert food raster to a SpatVector, and then a sf
+food_polygon <- terra::as.polygons(food_raster)
+food_sf <- st_as_sf(food_polygon)
+
+#convert carbon raster to a SpatVector, and then a sf
+carbon_polygon <- as.polygons(carbon_raster)
+carbon_sf <- st_as_sf(carbon_polygon)
+
+ggplot() +
+  geom_sf(data = ahupuaa_raw_sf) +
+  geom_sf(data = carbon_sf, color = "skyblue1") +
+  theme_bw()
+
+ggplot() +
+  geom_sf(data = ahupuaa_raw_sf) +
+  geom_sf(data = food_sf, color = "green2") +
+  theme_bw()
+```
+
+
+
+
