@@ -177,7 +177,9 @@ ahupuaa_resample <- terra::resample(ahupuaa_rast, multi_layer_sr, method='biline
 
 
 multi_layer_df_food <- as.data.frame(multi_layer_sr, xy = TRUE) %>%
-  filter(Food == 1 & Carbon == 0)
+  filter(Food == 1 & Carbon == 0) %>% 
+  filter(x %in% (-155:-157) & y %in% 19:21 )
+
 multi_layer_df_carbon <- as.data.frame(multi_layer_sr, xy = TRUE) %>%
   filter(Food == 0 & Carbon == 1)
   pivot_longer(cols = c(Food, Carbon),
@@ -186,13 +188,16 @@ multi_layer_df_carbon <- as.data.frame(multi_layer_sr, xy = TRUE) %>%
   mutate(value = as.character(value))
 
 # st intersect and plot on top of full shapefile 
-multiple_df <- st_intersection()
 
-?geom_raster
+
+
+
+data_vec2 <- data_sf_clean %>% filter( mokupuni == "Hawai'i") 
+vect(data_vec2)
 
 ggplot() +
-  geom_sf(data = data_vect) +
-  geom_tile(data = multi_layer_df_food, aes(x = x, y = y), fill = "red") +
+  geom_sf(data = data_vec2) +
+  geom_tile(data = multi_layer_df_food, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
   geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "green")
 
   scale_fill_manual(values = c("Carbon" = "red", "Food" = "green"))
