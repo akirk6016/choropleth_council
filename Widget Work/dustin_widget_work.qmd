@@ -66,9 +66,32 @@ st_layers(dsn = here::here("data", "ahupuaa","ahupuaa.shp"))
 
 data_sf <- st_as_sf(data) # --> EPSG 3750
 
-ahupuaa_new_sf <- read_sf(here("data/ahupuaa", "ahupuaa.gpkg")) %>% 
+ahupuaa_new_sf <- st_read(here("data/ahupuaa", "ahupuaa.gpkg")) %>% 
   janitor::clean_names()
-  
+
+### FROM .SHP FILE ###
+data_new_sf <- st_transform(data, 4326)
+
+st_crs(data_new_sf)
+
+data_sf_clean <- data_new_sf %>% 
+  mutate(moku = str_replace_all(moku, pattern = "ʻ", replacement = "'"),
+         mokupuni = str_replace_all(mokupuni, pattern = "ʻ", replacement = "'"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ʻ", replacement = "'")) %>% 
+  janitor::clean_names()
+
+data_island <- data_sf_clean %>% 
+  dplyr::select(ahupuaa, shape_leng, shape_area, geometry)
+(
+data_rast <- rast(data_sf_clean)
+)
+
+data_vect <- vect(data_sf_clean)
+
+values <- extract(multi_layer_sr, data_vect, fun = mean, na.rm = TRUE)
+
+
+### FROM .GPKG FILE ###
 ahupuaa_new_sf <- st_transform(ahupuaa_new_sf, 4326)
 
 st_crs(ahupuaa_new_sf)
@@ -93,25 +116,114 @@ ahupuaa_sf_clean <- ahupuaa_new_sf %>%
 #   ))
 
 ahupuaa_island <- ahupuaa_sf_clean %>% 
-  dplyr::select(mokupuni, shape_leng, shape_area, )
+  dplyr::select(ahupuaa, shape_leng, shape_area, geom )
 
-ahupuaa_rast <- rast(ahupuaa_island)
 
-ahupuaa_rast_df <- as.data.frame(ahupuaa_rast, xy = TRUE) %>% 
-  na.omit()
+ahupuaa_df <- as.data.frame(ahupuaa_sf_clean, xy = TRUE)
+r <- raster(ncol=10, nrow=10)
+extent(r) <- extent(ahupuaa_new_sf)
+(
+rp <- rasterize(ahupuaa_new_sf, r, 'shape_area')
+)
 
-plot(ahupuaa_island)
+plot(rp)
+(
+ahupuaa_rast <- rast(ahupuaa_sf_clean)
+)
 
-ggplot() + 
-  geom_sf(data = ahupuaa_island) 
+names(ahupuaa_rast)
+ahupuaa_rast2 <- ahupuaa_rast[[2]]
+
+# ahupuaa_sf_clean_xy <- ahupuaa_sf_clean %>% 
+#   mutate(coords = sf::st_coordinates(.)[,1],
+#                 lat = sf::st_coordinates(.)[,2])
+
+ahupuaa_sf_clean_xy <- extract(ahupuaa_sf_clean$geom,cellnumbers=T)
+
+# ahupuaa_sf_clean_xy <- ahupuaa_sf_clean %>% 
+#   {\(.) mutate(., coords = sf::st_coordinates(.))}()
+
+ggplot(ahupuaa_sf_clean) +
+  stat_sf_coordinates()
+
+ggplot(ahupuaa_sf_clean) +
+  geom_errorbarh(
+    aes(geometry = geom,
+        xmin = after_stat(x) - 0.1,
+        xmax = after_stat(x) + 0.1,
+        y = after_stat(y),
+        height = 0.04),
+    stat = "sf_coordinates"
+  )
+terra::summary(rp)
+values(rp)
+p3 <- ggplot(ahupuaa_rast)+
+    geom_raster(aes(x,y,fill=lyr.1))
 ```
+## Trying to read in Carbon and Food data as one SpatRaster with two layers 
+
+```{r}
+files_list <- here::here(c("data/food_priority1.tif", "data/carbon_priority2.tif"))
+
+(
+  multi_layer_sr <- rast(files_list)
+)
+multi_layer_polygons <- as.polygons(multi_layer_sr)
+
+multi_layer_sf <- st_as_sf(multi_layer_polygons)
+(
+ahupuaa_resample <- terra::resample(ahupuaa_rast, multi_layer_sr, method='bilinear')
+)
+
+
+multi_layer_df_food <- as.data.frame(multi_layer_sr, xy = TRUE) %>%
+  filter(Food == 1 & Carbon == 0)
+multi_layer_df_carbon <- as.data.frame(multi_layer_sr, xy = TRUE) %>%
+  filter(Food == 0 & Carbon == 1)
+  pivot_longer(cols = c(Food, Carbon),
+               names_to = "layer",
+               values_to = "value") %>% 
+  mutate(value = as.character(value))
+
+# st intersect and plot on top of full shapefile 
+multiple_df <- st_intersection()
+
+?geom_raster
+
+ggplot() +
+  geom_sf(data = data_vect) +
+  geom_tile(data = multi_layer_df_food, aes(x = x, y = y), fill = "red") +
+  geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "green")
+
+  scale_fill_manual(values = c("Carbon" = "red", "Food" = "green"))
+  geom_sf(data = multi_layer_sf, )
+  # geom_spatraster(data = multi_layer_sr,aes(fill = Carbon)) 
+  
+r2 <- crop(multi_layer_sr, extent(ahupuaa_island))
+r3 <- mask(r2, ahupuaa_island$ahupuaa)
+
+# terra::writeRaster(multi_layer_sr, "data/food_carbon_stack.tif", filetype = "GTiff", overwrite = TRUE)
+```
+## Trying to plot my resampled ahupuaa (convert it to df too)
+
+```{r}
+ahupuaa_resample_df <- as.data.frame(ahupuaa_resample, xy = TRUE)
+```
+
 
 ```{r}
 food_file <- here::here("data", "food_priority1.tif")
 
+
 food_rs <- stack(here::here("data", "food_priority1.tif"))
 
+(
 food_data <- rast(food_file)
+)
+terra::crs(food_data)
+terra::crs(food_rs)
+
+food_rs_WGS84 <- st_transform(food_rs, 4326)
 
 # food_sf <- st_as_sf(food_data)
 
