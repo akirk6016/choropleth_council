@@ -100,12 +100,12 @@ data_rast <- rast(data_sf_clean)
 )
 
 ## Vectorizing data_sf_clean 
-data_vect <- vect(data_sf_clean)
+data_vec <- vect(data_sf_clean)
 
-# Filtering data to just hawaii 
-data_vec2 <- data_sf_clean %>% filter( mokupuni == "Hawai'i") 
+# Filtering data to just hawaii (checking)
+data_vec_hawaii <- data_sf_clean %>% filter( mokupuni == "Hawai'i") 
 # Vectorizing it 
-vect(data_vec2)
+vect(data_vec_hawaii)
 
 
 ################################ FOOD .TIF FILE ##################################
@@ -168,7 +168,7 @@ multi_layer_polygons <- as.polygons(multi_layer_rs)
 ## Converting polygons to sf 
 multi_layer_sf <- st_as_sf(multi_layer_polygons)
 
-************** STOPPED HERE FOR TIDYING **************
+
 (
 data_resample <- terra::resample(data_rast, multi_layer_rs, method='bilinear')
 )
@@ -181,7 +181,7 @@ multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
   filter(Food == 0 & Carbon == 1) 
 
 ## Send this down after loading the multi_layers_sr 
-# values <- extract(multi_layer_rs, data_vect, fun = max, na.rm = TRUE)
+values <- extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
 
 
 
@@ -211,23 +211,61 @@ ggplot(data_sf_clean) +
 
 
 # Cropping my multi-layer spatraster to the extent of my filtered vector 
-r2 <- crop(multi_layer_rs, extent(data_vec2))
-# Converting my cropped r2 raster to a dataframe 
-r2_df <- as.data.frame(r2, xy = TRUE)
+multi_layer_hawaii_rs <- crop(multi_layer_rs, extent(data_vec_hawaii))
+# Converting my cropped multi_layer_ras__hawaii raster to a dataframe 
+multi_layer_hawaii_df <- as.data.frame(multi_layer_hawaii_rs, xy = TRUE)
 
 # PLotting it over the filtered vector 
 ggplot() +
-  geom_sf(data = data_vec2) +
-  geom_tile(data = r2_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+  geom_sf(data = data_vec_hawaii) +
+  geom_tile(data = multi_layer_hawaii_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+
+## Now doing O'ahu
+data_vec_oahu <- data_sf_clean %>% 
+  filter(mokupuni == "O'ahu")
+vect(data_vec_oahu)
+multi_layer_oahu_rs <- crop(multi_layer_rs, extent(data_vec_oahu))
+multi_layer_oahu_df <- as.data.frame(multi_layer_oahu_rs, xy = TRUE)
+
+ggplot() +
+  geom_sf(data = data_vec_oahu) +
+  geom_tile(data = multi_layer_oahu_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+
+## Now doing Maui County
+data_vec_maui <- data_sf_clean %>% 
+  filter(mokupuni == "Maui" | mokupuni == "Moloka'i" | mokupuni == "Lāna'i" | mokupuni == "Molokini" | mokupuni == "Kaho'olawe") %>% 
+  filter()
+
+vect(data_vec_maui)
+multi_layer_maui_rs <- crop(multi_layer_rs, extent(data_vec_maui))
+multi_layer_maui_df <- as.data.frame(multi_layer_maui_rs, xy = TRUE)
+
+erie_bathy_Cropped <- crop(x = multi_layer_rs, y = as_Spatial(data_vec_maui))
+
+erie_bathy_df <- as.data.frame(erie_bathy_Cropped, xy = TRUE)
+ggplot() +
+  geom_sf(data = data_vec_maui) +
+  geom_tile(data = multi_layer_maui_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+
+## Now doing Kauai 
+data_vec_kauai <- data_sf_clean %>% 
+  filter(mokupuni == "Kaua'i")
+
+vect(data_vec_kauai)
+multi_layer_kauai_rs <- crop(multi_layer_rs, extent(data_vec_kauai))
+multi_layer_kauai_df <- as.data.frame(multi_layer_kauai_rs, xy = TRUE)
+
+ggplot() +
+  geom_sf(data = data_vec_kauai) +
+  geom_tile(data = multi_layer_kauai_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
 
 # Plotting my different rasters that are selected for food = 1 and carbon = 1 over the islands data 
 ggplot() +
-  geom_sf(data = data_vect) +
-  geom_tile(data = multi_layer_df_food, inherit.aes = FALSE, aes(x = x, y = y), fill = "red") + 
-  geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "green") 
-
+  geom_sf(data = data_vec) +
+  geom_tile(data = multi_layer_df_food, inherit.aes = FALSE, aes(x = x, y = y), fill = "green") + 
+  geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "red", alpha = 0.5) +
   scale_fill_manual(values = c("Carbon" = "red", "Food" = "green"))
-  geom_sf(data = multi_layer_sf, )
+  # geom_sf(data = multi_layer_sf, )
   # geom_spatraster(data = multi_layer_rs,aes(fill = Carbon)) 
   
 
@@ -236,6 +274,7 @@ r3 <- mask(r2, ahupuaa_island$ahupuaa)
 plot(r2)
 # terra::writeRaster(multi_layer_rs, "data/food_carbon_stack.tif", filetype = "GTiff", overwrite = TRUE)
 ```
+
 ## Trying to plot my resampled ahupuaa (convert it to df too)
 
 ```{r}
@@ -262,6 +301,10 @@ food_df_plot
 # par(new = TRUE)
 # f2 <- plot(food_data)
 ```
+
+
+
+
 
 ```{r}
 carbon_df_plot <- ggplot(data = carbon_df) + 
