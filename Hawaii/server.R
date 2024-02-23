@@ -40,7 +40,7 @@ function(input, output, session) {
     reactive_map <- reactive({
       filter_selection <- input$data
 
-      subset_ahupuaa <- ahupuaa_island[ahupuaa_island$mokupuni == filter_selection, ]
+      subset_ahupuaa <- data_sf_clean[data_sf_clean$mokupuni == filter_selection, ]
 
       return(subset_ahupuaa)
     })
