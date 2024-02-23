@@ -204,12 +204,6 @@ ggplot(data_sf_clean) +
 ## Trying to read in Carbon and Food data as one SpatRaster with two layers 
 
 ```{r}
-
-
-# st intersect and plot on top of full shapefile 
-
-
-
 # Cropping my multi-layer spatraster to the extent of my filtered vector 
 multi_layer_hawaii_rs <- crop(multi_layer_rs, extent(data_vec_hawaii))
 # Converting my cropped multi_layer_ras__hawaii raster to a dataframe 
@@ -217,8 +211,19 @@ multi_layer_hawaii_df <- as.data.frame(multi_layer_hawaii_rs, xy = TRUE)
 
 # PLotting it over the filtered vector 
 ggplot() +
-  geom_sf(data = data_vec_hawaii) +
+  geom_sf(data = data_vec_hawaii, fill = NA) +
   geom_tile(data = multi_layer_hawaii_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+
+
+data_vec_hawaii_kona <- data_vec_hawaii %>% 
+  filter(moku == "Kona" | moku == "Hilo")
+vect(data_vec_hawaii_kona)
+multi_layer_hawaii_kona_rs <- crop(multi_layer_rs, extent(data_vec_hawaii_kona))
+multi_layer_hawaii_kona_df <- as.data.frame(multi_layer_hawaii_kona_rs, xy = TRUE)
+
+ggplot() +
+  geom_sf(data = data_vec_hawaii_kona) +
+  geom_tile(data = multi_layer_hawaii_kona_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
 
 ## Now doing O'ahu
 data_vec_oahu <- data_sf_clean %>% 
@@ -233,9 +238,7 @@ ggplot() +
 
 ## Now doing Maui County
 data_vec_maui <- data_sf_clean %>% 
-  filter(mokupuni == "Maui" | mokupuni == "Moloka'i" | mokupuni == "Lāna'i" | mokupuni == "Molokini" | mokupuni == "Kaho'olawe") %>% 
-  filter()
-
+  filter(mokupuni == "Maui" | mokupuni == "Moloka'i" | mokupuni == "Lāna'i" | mokupuni == "Kaho'olawe" | mokupuni == "Molokini")
 vect(data_vec_maui)
 multi_layer_maui_rs <- crop(multi_layer_rs, extent(data_vec_maui))
 multi_layer_maui_df <- as.data.frame(multi_layer_maui_rs, xy = TRUE)
@@ -261,7 +264,7 @@ ggplot() +
 
 # Plotting my different rasters that are selected for food = 1 and carbon = 1 over the islands data 
 ggplot() +
-  geom_sf(data = data_vec) +
+  geom_sf(data = data_vec, fill = "lightblue") +
   geom_tile(data = multi_layer_df_food, inherit.aes = FALSE, aes(x = x, y = y), fill = "green") + 
   geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "red", alpha = 0.5) +
   scale_fill_manual(values = c("Carbon" = "red", "Food" = "green"))
@@ -270,8 +273,7 @@ ggplot() +
   
 
 
-r3 <- mask(r2, ahupuaa_island$ahupuaa)
-plot(r2)
+
 # terra::writeRaster(multi_layer_rs, "data/food_carbon_stack.tif", filetype = "GTiff", overwrite = TRUE)
 ```
 
