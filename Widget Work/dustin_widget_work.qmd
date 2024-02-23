@@ -17,6 +17,7 @@ execute:
 ```{r}
 #| message: false
 # Loading all my packages 
+rm(list = ls())
 library(tidyverse)
 library(here)
 library(sf) # Vector spatial data
@@ -29,7 +30,7 @@ library(tmap)
 library(spatstat)
 library(patchwork)
 library(stringr)
-rm(list = ls())
+
 ```
 
 ```{r}
@@ -53,161 +54,187 @@ pacman::p_load(
   future.apply, # parallel processing
   CropScapeR, # download CDL data
   prism, # download PRISM data
-  exactextractr # extract raster values to sf
+  exactextractr # extract raster values to sf --> i.e. zonal statistics 
 )
 ```
 
 
+# Loading data in a reasonable format and doing necessary switcheroos for my plot 
+
 ```{r}
+########################### AHUPUAA .SHP FILE ################################## 
+## Loading ahupuaa .shp file as 'data'
 data <- st_read(dsn = here::here("data", "ahupuaa","ahupuaa.shp"), 
                 layer = "ahupuaa")
 
+## Obtaining the layers from the ahupuaa .shp file 
 st_layers(dsn = here::here("data", "ahupuaa","ahupuaa.shp"))
 
+## Converting .shp file to a simple features collection
 data_sf <- st_as_sf(data) # --> EPSG 3750
 
-ahupuaa_new_sf <- st_read(here("data/ahupuaa", "ahupuaa.gpkg")) %>% 
-  janitor::clean_names()
-
-### FROM .SHP FILE ###
+## Reprojecting data to WGS84 
 data_new_sf <- st_transform(data, 4326)
 
+## Checking coordinate reference system 
 st_crs(data_new_sf)
 
+## Converting the wack apostrophies and other characters to ones R can recognize
 data_sf_clean <- data_new_sf %>% 
   mutate(moku = str_replace_all(moku, pattern = "ʻ", replacement = "'"),
          mokupuni = str_replace_all(mokupuni, pattern = "ʻ", replacement = "'"),
-         ahupuaa = str_replace_all(ahupuaa, pattern = "ʻ", replacement = "'")) %>% 
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ʻ", replacement = "'"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ā", replacement = "a"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ī", replacement = "i"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ō", replacement = "o"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ē", replacement = "e"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ū", replacement = "u"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "Ï", replacement = "I"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "Ō", replacement = "O"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "Ā", replacement = "A")) %>% 
   janitor::clean_names()
 
-data_island <- data_sf_clean %>% 
-  dplyr::select(ahupuaa, shape_leng, shape_area, geometry)
+## Rasterizing data_sf_clean (just in case )
 (
 data_rast <- rast(data_sf_clean)
 )
 
+## Vectorizing data_sf_clean 
 data_vect <- vect(data_sf_clean)
 
-values <- extract(multi_layer_sr, data_vect, fun = mean, na.rm = TRUE)
+# Filtering data to just hawaii 
+data_vec2 <- data_sf_clean %>% filter( mokupuni == "Hawai'i") 
+# Vectorizing it 
+vect(data_vec2)
 
 
-### FROM .GPKG FILE ###
-ahupuaa_new_sf <- st_transform(ahupuaa_new_sf, 4326)
+################################ FOOD .TIF FILE ##################################
 
-st_crs(ahupuaa_new_sf)
+## Loads it as a value and then rasterizing it makes it a SpatRaster
+food_file <- here::here("data", "food_priority1.tif")
 
-ahupuaa_sf_clean <- ahupuaa_new_sf %>% 
-  mutate(moku = str_replace_all(moku, pattern = "ʻ", replacement = "'"),
-         mokupuni = str_replace_all(mokupuni, pattern = "ʻ", replacement = "'"),
-         ahupuaa = str_replace_all(ahupuaa, pattern = "ʻ", replacement = "'"))
+## Loads it directly as a RasterStack object
+# (
+# food_rs <- stack(here::here("data", "food_priority1.tif"))
+# )
 
+## Checking CRS 
+# terra::crs(food_rs)
 
-# ahupuaa_sf_clean <- ahupuaa_new_sf %>% 
-#   mutate(island = case_when(
-#     str_detect(mokupuni, "ahu") ~ "O'ahu",
-#     str_detect(mokupuni, "Hawa") ~ "Hawai'i",
-#     str_detect(mokupuni, "ihau") ~ "Ni'ihau",
-#     str_detect(mokupuni, "Kaua") ~ "Kaua'i",
-#     str_detect(mokupuni, "Moloka") ~ "Moloka'i",
-#     str_detect(mokupuni, "Molokini") ~ "Molokini",
-#     str_detect(mokupuni, "Kaho") ~ "Kaho'olawe",
-#     str_detect(mokupuni, "Maui") ~ "Maui",
-#     str_detect(mokupuni, "na") ~ "Lana'i"
-#   ))
+## Reprojecting food raster to WGS 84 
+# food_rs_WGS84 <- st_transform(food_rs, 4326)
 
-ahupuaa_island <- ahupuaa_sf_clean %>% 
-  dplyr::select(ahupuaa, shape_leng, shape_area, geom )
-
-
-ahupuaa_df <- as.data.frame(ahupuaa_sf_clean, xy = TRUE)
-r <- raster(ncol=10, nrow=10)
-extent(r) <- extent(ahupuaa_new_sf)
+## Rasterizing food_file --> Turns to SpatRaster
 (
-rp <- rasterize(ahupuaa_new_sf, r, 'shape_area')
+food_rs <- rast(food_file)
 )
 
-plot(rp)
+## Tells us that the raster is projected in WGS 84 
+# terra::crs(food_data)
+
+## Turning food raster into a dataframe for plotting purposes 
+food_df <- as.data.frame(food_rs, xy = TRUE) %>% 
+  na.omit() %>% 
+  mutate(Food = as.character(Food))
+
+################################ CARBON .TIF FILE ##################################
+
+## Loads it as a value and then rasterizing it makes it a SpatRaster
+carbon_file <- here("data", "carbon_priority2.tif")
+
+## Rasterizing carbon_file --> Turns to SpatRaster
 (
-ahupuaa_rast <- rast(ahupuaa_sf_clean)
+carbon_rs <- rast(carbon_file)
 )
 
-names(ahupuaa_rast)
-ahupuaa_rast2 <- ahupuaa_rast[[2]]
+## Turning carbon raster into a dataframe for plotting purposes
+carbon_df <- as.data.frame(carbon_rs, xy = TRUE) %>% 
+  na.omit() %>% 
+  mutate(Carbon = as.character(Carbon))
 
-# ahupuaa_sf_clean_xy <- ahupuaa_sf_clean %>% 
-#   mutate(coords = sf::st_coordinates(.)[,1],
-#                 lat = sf::st_coordinates(.)[,2])
+############################## MULTI-LAYER .TIF FILE ##################################
 
-ahupuaa_sf_clean_xy <- extract(ahupuaa_sf_clean$geom,cellnumbers=T)
+## Loading both carbon and food files as a list
+files_list <- here::here(c("data/food_priority1.tif", "data/carbon_priority2.tif"))
 
-# ahupuaa_sf_clean_xy <- ahupuaa_sf_clean %>% 
-#   {\(.) mutate(., coords = sf::st_coordinates(.))}()
+## Rasterizing them --> Same rows and columns, but two layers 
+(
+  multi_layer_rs <- rast(files_list)
+)
 
-ggplot(ahupuaa_sf_clean) +
+## Converting the raster to polygons 
+multi_layer_polygons <- as.polygons(multi_layer_rs)
+
+## Converting polygons to sf 
+multi_layer_sf <- st_as_sf(multi_layer_polygons)
+
+************** STOPPED HERE FOR TIDYING **************
+(
+data_resample <- terra::resample(data_rast, multi_layer_rs, method='bilinear')
+)
+
+
+multi_layer_df_food <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+  filter(Food == 1 & Carbon == 0)
+
+multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+  filter(Food == 0 & Carbon == 1) 
+
+## Send this down after loading the multi_layers_sr 
+# values <- extract(multi_layer_rs, data_vect, fun = max, na.rm = TRUE)
+
+
+
+
+
+ggplot(data_sf_clean) +
   stat_sf_coordinates()
 
-ggplot(ahupuaa_sf_clean) +
+ggplot(data_sf_clean) +
   geom_errorbarh(
-    aes(geometry = geom,
+    aes(geometry = geometry,
         xmin = after_stat(x) - 0.1,
         xmax = after_stat(x) + 0.1,
         y = after_stat(y),
         height = 0.04),
     stat = "sf_coordinates"
   )
-terra::summary(rp)
-values(rp)
-p3 <- ggplot(ahupuaa_rast)+
-    geom_raster(aes(x,y,fill=lyr.1))
+
 ```
 ## Trying to read in Carbon and Food data as one SpatRaster with two layers 
 
 ```{r}
-files_list <- here::here(c("data/food_priority1.tif", "data/carbon_priority2.tif"))
 
-(
-  multi_layer_sr <- rast(files_list)
-)
-multi_layer_polygons <- as.polygons(multi_layer_sr)
-
-multi_layer_sf <- st_as_sf(multi_layer_polygons)
-(
-ahupuaa_resample <- terra::resample(ahupuaa_rast, multi_layer_sr, method='bilinear')
-)
-
-
-multi_layer_df_food <- as.data.frame(multi_layer_sr, xy = TRUE) %>%
-  filter(Food == 1 & Carbon == 0) %>% 
-  filter(x %in% (-155:-157) & y %in% 19:21 )
-
-multi_layer_df_carbon <- as.data.frame(multi_layer_sr, xy = TRUE) %>%
-  filter(Food == 0 & Carbon == 1)
-  pivot_longer(cols = c(Food, Carbon),
-               names_to = "layer",
-               values_to = "value") %>% 
-  mutate(value = as.character(value))
 
 # st intersect and plot on top of full shapefile 
 
 
 
+# Cropping my multi-layer spatraster to the extent of my filtered vector 
+r2 <- crop(multi_layer_rs, extent(data_vec2))
+# Converting my cropped r2 raster to a dataframe 
+r2_df <- as.data.frame(r2, xy = TRUE)
 
-data_vec2 <- data_sf_clean %>% filter( mokupuni == "Hawai'i") 
-vect(data_vec2)
-
+# PLotting it over the filtered vector 
 ggplot() +
   geom_sf(data = data_vec2) +
-  geom_tile(data = multi_layer_df_food, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
-  geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "green")
+  geom_tile(data = r2_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+
+# Plotting my different rasters that are selected for food = 1 and carbon = 1 over the islands data 
+ggplot() +
+  geom_sf(data = data_vect) +
+  geom_tile(data = multi_layer_df_food, inherit.aes = FALSE, aes(x = x, y = y), fill = "red") + 
+  geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "green") 
 
   scale_fill_manual(values = c("Carbon" = "red", "Food" = "green"))
   geom_sf(data = multi_layer_sf, )
-  # geom_spatraster(data = multi_layer_sr,aes(fill = Carbon)) 
+  # geom_spatraster(data = multi_layer_rs,aes(fill = Carbon)) 
   
-r2 <- crop(multi_layer_sr, extent(ahupuaa_island))
-r3 <- mask(r2, ahupuaa_island$ahupuaa)
 
-# terra::writeRaster(multi_layer_sr, "data/food_carbon_stack.tif", filetype = "GTiff", overwrite = TRUE)
+
+r3 <- mask(r2, ahupuaa_island$ahupuaa)
+plot(r2)
+# terra::writeRaster(multi_layer_rs, "data/food_carbon_stack.tif", filetype = "GTiff", overwrite = TRUE)
 ```
 ## Trying to plot my resampled ahupuaa (convert it to df too)
 
@@ -215,31 +242,12 @@ r3 <- mask(r2, ahupuaa_island$ahupuaa)
 ahupuaa_resample_df <- as.data.frame(ahupuaa_resample, xy = TRUE)
 ```
 
+## Plotting food data frame 
 
 ```{r}
-food_file <- here::here("data", "food_priority1.tif")
-
-
-food_rs <- stack(here::here("data", "food_priority1.tif"))
-
-(
-food_data <- rast(food_file)
-)
-terra::crs(food_data)
-terra::crs(food_rs)
-
-food_rs_WGS84 <- st_transform(food_rs, 4326)
-
-# food_sf <- st_as_sf(food_data)
-
-#-- convert to dataframe --#
-
-food_df <- as.data.frame(food_data, xy = TRUE) %>% 
-  na.omit() %>% 
-  mutate(Food = as.character(Food))
 
 food_df_plot <- ggplot(data = food_df) + 
-  geom_raster(aes(x = x, y = y, fill = Food)) + 
+  geom_tile(aes(x = x, y = y, fill = Food)) + 
   scale_fill_manual(values = c("green", "red")) + 
   coord_equal() + 
   theme_dark()
@@ -256,18 +264,8 @@ food_df_plot
 ```
 
 ```{r}
-carbon_file <- here("data", "carbon_priority2.tif")
-
-carbon_data <- rast(carbon_file)
-
-#-- convert to dataframe --#
-
-carbon_df <- as.data.frame(carbon_data, xy = TRUE) %>% 
-  na.omit() %>% 
-  mutate(Carbon = as.character(Carbon))
-
 carbon_df_plot <- ggplot(data = carbon_df) + 
-  geom_raster(aes(x = x, y = y, fill = Carbon)) + 
+  geom_tile(aes(x = x, y = y, fill = Carbon)) + 
   scale_fill_manual(values = c("green", "red")) + 
   coord_equal() + 
   theme_dark()
