@@ -78,12 +78,12 @@ carbon_sf <- st_as_sf(carbon_polygon)
 #basic static plots
 ggplot() +
   geom_sf(data = ahupuaa_raw_sf) +
-  geom_sf(data = carbon_sf, color = "skyblue1") +
+  geom_sf(data = carbon_sf, mapping = aes(color = Carbon)) +
   theme_bw()
 
 ggplot() +
   geom_sf(data = ahupuaa_raw_sf) +
-  geom_sf(data = food_sf, color = "green2") +
+  geom_sf(data = food_sf, mapping = aes(color = Food)) +
   theme_bw()
 
 
