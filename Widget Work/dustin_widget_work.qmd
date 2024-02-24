@@ -74,8 +74,9 @@ st_layers(dsn = here::here("data", "ahupuaa","ahupuaa.shp"))
 data_sf <- st_as_sf(data) # --> EPSG 3750
 
 ## Reprojecting data to WGS84 
+(
 data_new_sf <- st_transform(data, 4326)
-
+)
 ## Checking coordinate reference system 
 st_crs(data_new_sf)
 
@@ -192,9 +193,9 @@ values <- extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
 ########################### LAND USE COVER DATA ###############################
 
 # Success he thinks it will be useful! 
-
+(
 landuse <- st_read(here::here("/Users/dustinduncan/Desktop/ESM 244/Land_Use_Land_Cover_(LULC)/Land_Use_Land_Cover_(LULC).shp")) 
-
+)
 landuse_sf <- st_as_sf(landuse) %>% 
   mutate(landcover = as.factor(landcover)) %>% 
   mutate(coverstring = case_when(
@@ -245,10 +246,10 @@ landuse_sf <- st_as_sf(landuse) %>%
     landcover == "32" ~ "Rangeland",
     landcover == "33" ~ "Rangeland",
     landcover == "42" ~ "Evergreen Forest",
-    landcover == "51" ~ "Waterway",
-    landcover == "52" ~ "Waterway",
-    landcover == "53" ~ "Waterway",
-    landcover == "54" ~ "Waterway",
+    landcover == "51" ~ "Water Body",
+    landcover == "52" ~ "Water Body",
+    landcover == "53" ~ "Water Body",
+    landcover == "54" ~ "Water Body",
     landcover == "61" ~ "Wetland",
     landcover == "62" ~ "Wetland",
     landcover == "72" ~ "Beaches",
@@ -260,15 +261,14 @@ landuse_sf <- st_as_sf(landuse) %>%
   )) %>% 
   mutate(resample = as.factor(resample))
 
+landuse_vec <- vect(landuse_sf)
+
+ # st_crs(landuse_sf) # --> EPSG 4326
+
 ggplot() + 
-  geom_sf(data = landuse_sf, aes(fill = resample)) + 
+  geom_sf(data = landuse_sf, aes(fill = resample, color = resample)) + 
   theme(legend.position = "none")
-
-view(unique(landuse_sf$landcover))
-
-# Areas that are zero are urban areas 
-#   places that are zero for food and carbon are urban areas 
-#   
+  
 
 ggplot(data_sf_clean) +
   stat_sf_coordinates()
@@ -284,51 +284,50 @@ ggplot(data_sf_clean) +
   )
 
 ```
-## Trying to read in Carbon and Food data as one SpatRaster with two layers 
+## Intersecting land use coverage data with ahupuaa data 
 
 ```{r}
+class(landuse_sf)
+class(data_sf_clean)
+sf_use_s2(FALSE)
+data_landuse_sf <- st_union(data_sf_clean, landuse_sf, by_feature = geometry)
 
-### Testing kiauea vs kilauea 
-data_vec_test <- data_sf_clean %>% 
-  filter(ahupuaa == "Kilauea" | ahupuaa == "Kiauea")
-data_vec_test1 <- data_sf_clean %>% 
-  filter(ahupuaa == "Kilauea")
-data_vec_test2 <- data_sf_clean %>% 
-  filter(ahupuaa == "Kiauea")
-vect(data_vec_test)
-vect(data_vec_test1)
-vect(data_vec_test2)
-ggplot() +
-  geom_sf(data = data_vec_test1, fill = "blue")
-ggplot() +
-  geom_sf(data = data_vec_test2, fill = "red")
-ggplot() +
-  geom_sf(data = data_vec_test, aes(fill = ahupuaa))
+ggplot() + 
+  geom_sf(data = landuse_sf, aes(fill = resample, color = resample)) +
+  geom_sf(data = data_sf_clean, color = "black", fill = NA) +
+  theme(legend.position = "none")
 ```
 
 
+## Plotting Food and Carbon rasters and cropping to filtered ahupuaa data 
 
 ```{r}
-# Cropping my multi-layer spatraster to the extent of my filte#882222 vector 
+# Cropping my multi-layer spatraster to the extent of my filtered vector 
 multi_layer_hawaii_rs <- crop(multi_layer_rs, extent(data_vec_hawaii))
 # Converting my cropped multi_layer_ras__hawaii raster to a dataframe 
 multi_layer_hawaii_df <- as.data.frame(multi_layer_hawaii_rs, xy = TRUE)
+# Cropping my land use vector to the extent of my filtered vector
+landuse_hawaii_sf <- st_crop(landuse_sf, data_vec_hawaii)
 
 # PLotting it over the file vector 
 ggplot() +
-  geom_sf(data = data_vec_hawaii, fill = NA) +
-  geom_tile(data = multi_layer_hawaii_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
+  geom_sf(data = landuse_hawaii_sf, aes(fill = resample)) + 
+  geom_sf(data = data_vec_hawaii, fill = NA, color = "black") +
+  geom_tile(data = multi_layer_hawaii_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")  
+  theme(legend.position = "none")
 
-
+## Save this one for later 
 data_vec_hawaii_kona <- data_vec_hawaii %>% 
   filter(moku == "Kona" | moku == "Hilo")
 vect(data_vec_hawaii_kona)
 multi_layer_hawaii_kona_rs <- crop(multi_layer_rs, extent(data_vec_hawaii_kona))
 multi_layer_hawaii_kona_df <- as.data.frame(multi_layer_hawaii_kona_rs, xy = TRUE)
-
+landuse_hawaii_kona_sf <- st_crop(landuse_sf, data_vec_hawaii_kona)
 ggplot() +
-  geom_sf(data = data_vec_hawaii_kona) +
-  geom_tile(data = multi_layer_hawaii_kona_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
+  # geom_sf(data = landuse_hawaii_kona_sf, aes(fill = resample)) +
+  geom_sf(data = data_vec_hawaii_kona, fill = NA, color = "black") +
+  geom_tile(data = multi_layer_hawaii_kona_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222") + 
+  theme(legend.position = "none")
 
 ## Now doing O'ahu
 data_vec_oahu <- data_sf_clean %>% 
@@ -336,9 +335,10 @@ data_vec_oahu <- data_sf_clean %>%
 vect(data_vec_oahu)
 multi_layer_oahu_rs <- crop(multi_layer_rs, extent(data_vec_oahu))
 multi_layer_oahu_df <- as.data.frame(multi_layer_oahu_rs, xy = TRUE)
-
+landuse_oahu_sf <- st_crop(landuse_sf, data_vec_oahu)
 ggplot() +
-  geom_sf(data = data_vec_oahu) +
+  geom_sf(data = landuse_oahu_sf, aes(fill = resample)) +
+  geom_sf(data = data_vec_oahu, fill = NA, color = "black" ) +
   geom_tile(data = multi_layer_oahu_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 ## Now doing Maui County
@@ -347,22 +347,37 @@ data_vec_maui <- data_sf_clean %>%
 vect(data_vec_maui)
 multi_layer_maui_rs <- crop(multi_layer_rs, extent(data_vec_maui))
 multi_layer_maui_df <- as.data.frame(multi_layer_maui_rs, xy = TRUE) 
-
+landuse_maui_sf <- st_crop(landuse_sf, data_vec_maui)
 
 ggplot() +
-  geom_sf(data = data_vec_maui) +
-  geom_tile(data = multi_layer_maui_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
+  geom_sf(data = landuse_maui_sf, aes(fill = resample)) +
+  geom_sf(data = data_vec_maui, fill = NA, color = "black" ) +
+  geom_tile(data = multi_layer_maui_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222", alpha = 0.5)
 
-## Now doing Kauai 
+## Now doing Kauai
 data_vec_kauai <- data_sf_clean %>% 
-  filter(mokupuni == "Kaua'i")
+  filter(mokupuni == "Kaua'i" | mokupuni == "Ni'ihau")
 vect(data_vec_kauai)
 multi_layer_kauai_rs <- crop(multi_layer_rs, extent(data_vec_kauai))
 multi_layer_kauai_df <- as.data.frame(multi_layer_kauai_rs, xy = TRUE)
-
+landuse_kauai_sf <- st_crop(landuse_sf, data_vec_kauai)
 ggplot() +
-  geom_sf(data = data_vec_kauai) +
+  geom_sf(data = landuse_kauai_sf, aes(fill = resample)) +
+  geom_sf(data = data_vec_kauai, fill = NA, color = "black" ) +
   geom_tile(data = multi_layer_kauai_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
+
+## Now doing Ni'ihau
+data_vec_niihau <- data_sf_clean %>% 
+  filter(mokupuni == "Ni'ihau")
+vect(data_vec_niihau)
+# multi_layer_niihau_rs <- crop(multi_layer_rs, extent(data_vec_niihau))
+# multi_layer_niihau_df <- as.data.frame(multi_layer_niihau_rs, xy = TRUE)
+landuse_niihau_sf <- st_crop(landuse_sf, data_vec_niihau)
+ggplot() +
+  geom_sf(data = landuse_niihau_sf, aes(fill = resample)) +
+  geom_sf(data = data_vec_niihau, fill = NA, color = "black" )
+# +
+  geom_tile(data = multi_layer_niihau_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 # Plotting my different rasters that are selected for food = 1 and carbon = 1 over the islands data 
 ggplot() +
