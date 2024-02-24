@@ -62,10 +62,10 @@ pacman::p_load(
 # Loading data in a reasonable format and doing necessary switcheroos for my plot 
 
 ```{r}
-########################### AHUPUAA .SHP FILE ################################## 
+########################### AHUPUAA .SHP FILE ################################# 
 ## Loading ahupuaa .shp file as 'data'
-data <- st_read(dsn = here::here("data", "ahupuaa","ahupuaa.shp"), 
-                layer = "ahupuaa")
+data <- st_read(here::here("data", "ahupuaa","ahupuaa.shp")) %>% 
+  janitor::clean_names()
 
 ## Obtaining the layers from the ahupuaa .shp file 
 st_layers(dsn = here::here("data", "ahupuaa","ahupuaa.shp"))
@@ -86,12 +86,18 @@ data_sf_clean <- data_new_sf %>%
          ahupuaa = str_replace_all(ahupuaa, pattern = "ʻ", replacement = "'"),
          ahupuaa = str_replace_all(ahupuaa, pattern = "ā", replacement = "a"),
          ahupuaa = str_replace_all(ahupuaa, pattern = "ī", replacement = "i"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ï", replacement = "i"),
          ahupuaa = str_replace_all(ahupuaa, pattern = "ō", replacement = "o"),
          ahupuaa = str_replace_all(ahupuaa, pattern = "ē", replacement = "e"),
          ahupuaa = str_replace_all(ahupuaa, pattern = "ū", replacement = "u"),
          ahupuaa = str_replace_all(ahupuaa, pattern = "Ï", replacement = "I"),
          ahupuaa = str_replace_all(ahupuaa, pattern = "Ō", replacement = "O"),
-         ahupuaa = str_replace_all(ahupuaa, pattern = "Ā", replacement = "A")) %>% 
+         ahupuaa = str_replace_all(ahupuaa, pattern = "Ā", replacement = "A")) %>%
+  mutate(moku = ifelse(
+    ahupuaa == "Kiauea", "Ko'olau", moku),
+    mokupuni = ifelse(ahupuaa == "Kiauea" & moku == "Ko'olau", "Kaua'i", mokupuni
+      
+    )) %>% 
   janitor::clean_names()
 
 ## Rasterizing data_sf_clean (just in case )
@@ -108,7 +114,7 @@ data_vec_hawaii <- data_sf_clean %>% filter( mokupuni == "Hawai'i")
 vect(data_vec_hawaii)
 
 
-################################ FOOD .TIF FILE ##################################
+################################ FOOD .TIF FILE ###############################
 
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
 food_file <- here::here("data", "food_priority1.tif")
@@ -137,7 +143,7 @@ food_df <- as.data.frame(food_rs, xy = TRUE) %>%
   na.omit() %>% 
   mutate(Food = as.character(Food))
 
-################################ CARBON .TIF FILE ##################################
+################################ CARBON .TIF FILE #############################
 
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
 carbon_file <- here("data", "carbon_priority2.tif")
@@ -152,7 +158,7 @@ carbon_df <- as.data.frame(carbon_rs, xy = TRUE) %>%
   na.omit() %>% 
   mutate(Carbon = as.character(Carbon))
 
-############################## MULTI-LAYER .TIF FILE ##################################
+############################## MULTI-LAYER .TIF FILE ##########################
 
 ## Loading both carbon and food files as a list
 files_list <- here::here(c("data/food_priority1.tif", "data/carbon_priority2.tif"))
@@ -174,7 +180,7 @@ data_resample <- terra::resample(data_rast, multi_layer_rs, method='bilinear')
 )
 
 
-multi_layer_df_food <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+multi_layer_df_zeros <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
   filter(Food == 1 & Carbon == 0)
 
 multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
@@ -183,9 +189,86 @@ multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
 ## Send this down after loading the multi_layers_sr 
 values <- extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
 
+########################### LAND USE COVER DATA ###############################
 
+# Success he thinks it will be useful! 
 
+landuse <- st_read(here::here("/Users/dustinduncan/Desktop/ESM 244/Land_Use_Land_Cover_(LULC)/Land_Use_Land_Cover_(LULC).shp")) 
 
+landuse_sf <- st_as_sf(landuse) %>% 
+  mutate(landcover = as.factor(landcover)) %>% 
+  mutate(coverstring = case_when(
+    landcover == "0" ~ "No classification",
+    landcover == "11" ~ "Residential",
+    landcover == "12" ~ "Commercial and services",
+    landcover == "13" ~ "Industrial",
+    landcover == "14" ~ "Transportation, Communications, and Utilities",
+    landcover == "15" ~ "Industrial and Commercial Complexes",
+    landcover == "16" ~ "Mixed Urban or Built-up Land",
+    landcover == "17" ~ "Other Urban or Built-up land",
+    landcover == "21" ~ "Cropland and Pasture",
+    landcover == "22" ~ "Orchards, Groves, Vineyards, Nurseries and Ornamental Horticultural Areas",
+    landcover == "23" ~ "Confined Feeding Operations",
+    landcover == "24" ~ "Other Agricultural Land",
+    landcover == "31" ~ "Herbaceous Rangeland",
+    landcover == "32" ~ "Shrub and Brush Rangeland",
+    landcover == "33" ~ "Mixed Rangeland",
+    landcover == "42" ~ "Evergreen Forest Land",
+    landcover == "51" ~ "Streams and Canals",
+    landcover == "52" ~ "Lakes",
+    landcover == "53" ~ "Reservoirs",
+    landcover == "54" ~ "Bays and Estuaries",
+    landcover == "61" ~ "Forested Wetland",
+    landcover == "62" ~ "Nonforested Wetland",
+    landcover == "72" ~ "Beaches",
+    landcover == "73" ~ "Sandy Areas other than Beaches",
+    landcover == "74" ~ "Bare Exposed Rock",
+    landcover == "75" ~ "Strip Mines, Quarries, and Gravel Pits",
+    landcover == "76" ~ "Transitional Areas",
+    landcover == "77" ~ "Mixed Barren Land"
+  )) %>% 
+  mutate(coverstring = as.character(coverstring)) %>% 
+  mutate(resample = case_when(
+    landcover == "0" ~ "No classification",
+    landcover == "11" ~ "Residential",
+    landcover == "12" ~ "Industrial or Commercial",
+    landcover == "13" ~ "Industrial or Commercial",
+    landcover == "14" ~ "Transportation",
+    landcover == "15" ~ "Industrial or Commercial",
+    landcover == "16" ~ "Urban",
+    landcover == "17" ~ "Urban",
+    landcover == "21" ~ "Agriculture",
+    landcover == "22" ~ "Agriculture",
+    landcover == "23" ~ "Confined Feeding Operations",
+    landcover == "24" ~ "Agriculture",
+    landcover == "31" ~ "Rangeland",
+    landcover == "32" ~ "Rangeland",
+    landcover == "33" ~ "Rangeland",
+    landcover == "42" ~ "Evergreen Forest",
+    landcover == "51" ~ "Waterway",
+    landcover == "52" ~ "Waterway",
+    landcover == "53" ~ "Waterway",
+    landcover == "54" ~ "Waterway",
+    landcover == "61" ~ "Wetland",
+    landcover == "62" ~ "Wetland",
+    landcover == "72" ~ "Beaches",
+    landcover == "73" ~ "Sandy Areas other than Beaches",
+    landcover == "74" ~ "Barren or Unusable land",
+    landcover == "75" ~ "Barren or Unusable land",
+    landcover == "76" ~ "Urban",
+    landcover == "77" ~ "Barren or Unusable land",
+  )) %>% 
+  mutate(resample = as.factor(resample))
+
+ggplot() + 
+  geom_sf(data = landuse_sf, aes(fill = resample)) + 
+  theme(legend.position = "none")
+
+view(unique(landuse_sf$landcover))
+
+# Areas that are zero are urban areas 
+#   places that are zero for food and carbon are urban areas 
+#   
 
 ggplot(data_sf_clean) +
   stat_sf_coordinates()
@@ -204,15 +287,37 @@ ggplot(data_sf_clean) +
 ## Trying to read in Carbon and Food data as one SpatRaster with two layers 
 
 ```{r}
-# Cropping my multi-layer spatraster to the extent of my filtered vector 
+
+### Testing kiauea vs kilauea 
+data_vec_test <- data_sf_clean %>% 
+  filter(ahupuaa == "Kilauea" | ahupuaa == "Kiauea")
+data_vec_test1 <- data_sf_clean %>% 
+  filter(ahupuaa == "Kilauea")
+data_vec_test2 <- data_sf_clean %>% 
+  filter(ahupuaa == "Kiauea")
+vect(data_vec_test)
+vect(data_vec_test1)
+vect(data_vec_test2)
+ggplot() +
+  geom_sf(data = data_vec_test1, fill = "blue")
+ggplot() +
+  geom_sf(data = data_vec_test2, fill = "red")
+ggplot() +
+  geom_sf(data = data_vec_test, aes(fill = ahupuaa))
+```
+
+
+
+```{r}
+# Cropping my multi-layer spatraster to the extent of my filte#882222 vector 
 multi_layer_hawaii_rs <- crop(multi_layer_rs, extent(data_vec_hawaii))
 # Converting my cropped multi_layer_ras__hawaii raster to a dataframe 
 multi_layer_hawaii_df <- as.data.frame(multi_layer_hawaii_rs, xy = TRUE)
 
-# PLotting it over the filtered vector 
+# PLotting it over the file vector 
 ggplot() +
   geom_sf(data = data_vec_hawaii, fill = NA) +
-  geom_tile(data = multi_layer_hawaii_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+  geom_tile(data = multi_layer_hawaii_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 
 data_vec_hawaii_kona <- data_vec_hawaii %>% 
@@ -223,7 +328,7 @@ multi_layer_hawaii_kona_df <- as.data.frame(multi_layer_hawaii_kona_rs, xy = TRU
 
 ggplot() +
   geom_sf(data = data_vec_hawaii_kona) +
-  geom_tile(data = multi_layer_hawaii_kona_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+  geom_tile(data = multi_layer_hawaii_kona_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 ## Now doing O'ahu
 data_vec_oahu <- data_sf_clean %>% 
@@ -234,40 +339,37 @@ multi_layer_oahu_df <- as.data.frame(multi_layer_oahu_rs, xy = TRUE)
 
 ggplot() +
   geom_sf(data = data_vec_oahu) +
-  geom_tile(data = multi_layer_oahu_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+  geom_tile(data = multi_layer_oahu_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 ## Now doing Maui County
 data_vec_maui <- data_sf_clean %>% 
   filter(mokupuni == "Maui" | mokupuni == "Moloka'i" | mokupuni == "Lāna'i" | mokupuni == "Kaho'olawe" | mokupuni == "Molokini")
 vect(data_vec_maui)
 multi_layer_maui_rs <- crop(multi_layer_rs, extent(data_vec_maui))
-multi_layer_maui_df <- as.data.frame(multi_layer_maui_rs, xy = TRUE)
+multi_layer_maui_df <- as.data.frame(multi_layer_maui_rs, xy = TRUE) 
 
-erie_bathy_Cropped <- crop(x = multi_layer_rs, y = as_Spatial(data_vec_maui))
 
-erie_bathy_df <- as.data.frame(erie_bathy_Cropped, xy = TRUE)
 ggplot() +
   geom_sf(data = data_vec_maui) +
-  geom_tile(data = multi_layer_maui_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+  geom_tile(data = multi_layer_maui_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 ## Now doing Kauai 
 data_vec_kauai <- data_sf_clean %>% 
   filter(mokupuni == "Kaua'i")
-
 vect(data_vec_kauai)
 multi_layer_kauai_rs <- crop(multi_layer_rs, extent(data_vec_kauai))
 multi_layer_kauai_df <- as.data.frame(multi_layer_kauai_rs, xy = TRUE)
 
 ggplot() +
   geom_sf(data = data_vec_kauai) +
-  geom_tile(data = multi_layer_kauai_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "red")
+  geom_tile(data = multi_layer_kauai_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 # Plotting my different rasters that are selected for food = 1 and carbon = 1 over the islands data 
 ggplot() +
   geom_sf(data = data_vec, fill = "lightblue") +
   geom_tile(data = multi_layer_df_food, inherit.aes = FALSE, aes(x = x, y = y), fill = "green") + 
-  geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "red", alpha = 0.5) +
-  scale_fill_manual(values = c("Carbon" = "red", "Food" = "green"))
+  geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "#882222", alpha = 0.5) +
+  scale_fill_manual(values = c("Carbon" = "#882222", "Food" = "green"))
   # geom_sf(data = multi_layer_sf, )
   # geom_spatraster(data = multi_layer_rs,aes(fill = Carbon)) 
   
@@ -277,19 +379,28 @@ ggplot() +
 # terra::writeRaster(multi_layer_rs, "data/food_carbon_stack.tif", filetype = "GTiff", overwrite = TRUE)
 ```
 
-## Trying to plot my resampled ahupuaa (convert it to df too)
-
-```{r}
-ahupuaa_resample_df <- as.data.frame(ahupuaa_resample, xy = TRUE)
-```
 
 ## Plotting food data frame 
 
 ```{r}
+food_df1 <- food_df %>% 
+  filter(Food == 1)
+food_df0 <- food_df %>% 
+  filter(Food == 0)
+
+ggplot(data = food_df1) + 
+  geom_tile(aes(x = x, y = y), fill = "#882222") + 
+  coord_equal() + 
+  theme_dark()
+
+ggplot(data = food_df0) + 
+  geom_tile(aes(x = x, y = y), fill = "green") +
+  coord_equal() + 
+  theme_dark()
 
 food_df_plot <- ggplot(data = food_df) + 
   geom_tile(aes(x = x, y = y, fill = Food)) + 
-  scale_fill_manual(values = c("green", "red")) + 
+  scale_fill_manual(values = c("green", "#882222")) + 
   coord_equal() + 
   theme_dark()
 
@@ -309,9 +420,24 @@ food_df_plot
 
 
 ```{r}
+carbon_df1 <- carbon_df %>% 
+  filter(Carbon == 1)
+carbon_df0 <- carbon_df %>% 
+  filter(Carbon == 0)
+ggplot(data = carbon_df1) + 
+  geom_tile(aes(x = x, y = y), fill = "#882222") + 
+  coord_equal() + 
+  theme_dark()
+
+ggplot(data = carbon_df0) + 
+  geom_tile(aes(x = x, y = y), fill = "green") +
+  coord_equal() + 
+  theme_dark()
+
+
 carbon_df_plot <- ggplot(data = carbon_df) + 
   geom_tile(aes(x = x, y = y, fill = Carbon)) + 
-  scale_fill_manual(values = c("green", "red")) + 
+  scale_fill_manual(values = c("green", "#882222")) + 
   coord_equal() + 
   theme_dark()
 
