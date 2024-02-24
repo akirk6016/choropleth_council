@@ -73,8 +73,11 @@ food_sf <- st_as_sf(food_polygon)
 #convert carbon raster to a SpatVector, and then a sf
 carbon_polygon <- as.polygons(carbon_raster)
 carbon_sf <- st_as_sf(carbon_polygon)
+```
 
+### Make static plots
 
+```{r}
 #basic static plots
 ggplot() +
   geom_sf(data = ahupuaa_raw_sf) +
@@ -85,19 +88,33 @@ ggplot() +
   geom_sf(data = ahupuaa_raw_sf) +
   geom_sf(data = food_sf, mapping = aes(color = Food)) +
   theme_bw()
-
-
-# #interactive plots
-# tmap_mode(mode = "view")
-# tmap_options(check.and.fix = TRUE)
-# 
-# tm_shape(ahupuaa_raw_sf, name = "Ahupuaa") +
-#   tm_polygons(border.col = "black", legend.show = FALSE) +
-# tm_shape(food_sf) +
-#   tm_polygons(col = "green", border.col = "green") +
-# tm_shape(carbon_sf) +
-#   tm_polygons(col = "blue", border.col = "blue")
 ```
+
+### Make interactive plot
+
+```{r}
+#interactive plots
+tmap_mode(mode = "view")
+tmap_options(check.and.fix = TRUE)
+
+tm_shape(ahupuaa_raw_sf, name = "Ahupuaa") +
+  tm_polygons(border.col = "black", legend.show = FALSE) +
+tm_shape(food_sf, name = "Food Only") +
+  tm_polygons("Food") +
+tm_shape(carbon_sf, name = "Carbon Only") +
+  tm_polygons("Carbon")
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
