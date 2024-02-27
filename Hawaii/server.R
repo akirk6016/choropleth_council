@@ -41,13 +41,22 @@ function(input, output, session) {
       filter_selection <- input$data
 
       subset_ahupuaa <- data_sf_clean[data_sf_clean$mokupuni == filter_selection, ]
+      subset_vec <- vect(subset_ahupuaa)
+      return(subset_vec)
+    })
 
-      return(subset_ahupuaa)
+    reactive_map2 <- reactive({
+
+      multi_layer_reactive_rs <- crop(multi_layer_rs, extent(reactive_map()))
+      multi_layer_reactive_df <- as.data.frame(multi_layer_reactive_rs, xy = TRUE)
+
+      return(multi_layer_reactive_df)
     })
 
     output$dustin_plot <- renderPlot({
       ggplot() +
         geom_sf(data = reactive_map()) +
+        geom_tile(data = reactive_map2(), inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
         theme_bw()
     })
 

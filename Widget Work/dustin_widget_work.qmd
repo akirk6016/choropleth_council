@@ -325,6 +325,7 @@ vect(data_vec_hawaii_kona)
 multi_layer_hawaii_kona_rs <- crop(multi_layer_rs, extent(data_vec_hawaii_kona))
 multi_layer_hawaii_kona_df <- as.data.frame(multi_layer_hawaii_kona_rs, xy = TRUE)
 landuse_hawaii_kona_sf <- st_crop(landuse_sf, data_vec_hawaii_kona)
+
 ggplot() +
   # geom_sf(data = landuse_hawaii_kona_sf, aes(fill = resample)) +
   geom_sf(data = data_vec_hawaii_kona, fill = NA, color = "black") +
@@ -379,7 +380,7 @@ ggplot() +
   geom_sf(data = landuse_niihau_sf, aes(fill = resample)) +
   geom_sf(data = data_vec_niihau, fill = NA, color = "black" )
 # +
-  geom_tile(data = multi_layer_niihau_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
+  # geom_tile(data = multi_layer_niihau_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 # Plotting my different rasters that are selected for food = 1 and carbon = 1 over the islands data 
 ggplot() +
