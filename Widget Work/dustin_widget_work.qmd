@@ -181,7 +181,7 @@ data_resample <- terra::resample(data_rast, multi_layer_rs, method='bilinear')
 )
 
 
-multi_layer_df_zeros <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+multi_layer_df_food <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
   filter(Food == 1 & Carbon == 0)
 
 multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
@@ -283,6 +283,8 @@ ggplot(data_sf_clean) +
     stat = "sf_coordinates"
   )
 
+ggplot() + 
+  geom_sf(data = data_sf_clean)
 ```
 ## Intersecting land use coverage data with ahupuaa data 
 
@@ -290,7 +292,7 @@ ggplot(data_sf_clean) +
 class(landuse_sf)
 class(data_sf_clean)
 sf_use_s2(FALSE)
-data_landuse_sf <- st_union(data_sf_clean, landuse_sf, by_feature = geometry)
+# data_landuse_sf <- st_union(data_sf_clean, landuse_sf, by_feature = geometry)
 
 ggplot() + 
   geom_sf(data = landuse_sf, aes(fill = resample, color = resample)) +
