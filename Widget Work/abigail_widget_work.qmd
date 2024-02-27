@@ -64,7 +64,9 @@ food_raw_data <- rast(food_raw_file)
 carbon_raw_file <- here("data/carbon_sequestration_raw.tif")
 carbon_raw_data <- rast(carbon_raw_file)
 
-carbon_raw_df <- as.data.frame(carbon_raw_data)
+
+food_raw_sf <- st_as_sf(food_raw_data)
+
 ```
 
 ```{r}
@@ -78,5 +80,127 @@ carbon_data <- rast(carbon_file)
 
 
 carbon_df <- as.data.frame(carbon_data)
+```
+
+
+```{r}
+food_file <- here::here("data", "food_priority1.tif")
+
+## Loads it directly as a RasterStack object
+# (
+# food_rs <- stack(here::here("data", "food_priority1.tif"))
+# )
+
+## Checking CRS 
+# terra::crs(food_rs)
+
+## Reprojecting food raster to WGS 84 
+# food_rs_WGS84 <- st_transform(food_rs, 4326)
+
+## Rasterizing food_file --> Turns to SpatRaster
+(
+food_rs <- rast(food_file)
+)
+
+## Tells us that the raster is projected in WGS 84 
+# terra::crs(food_data)
+
+## Turning food raster into a dataframe for plotting purposes 
+food_df <- as.data.frame(food_rs, xy = TRUE) %>% 
+  na.omit() %>% 
+  mutate(Food = as.character(Food))
+
+################################ CARBON .TIF FILE #############################
+
+## Loads it as a value and then rasterizing it makes it a SpatRaster
+carbon_file <- here("data", "carbon_priority2.tif")
+
+## Rasterizing carbon_file --> Turns to SpatRaster
+(
+carbon_rs <- rast(carbon_file)
+)
+
+## Turning carbon raster into a dataframe for plotting purposes
+carbon_df <- as.data.frame(carbon_rs, xy = TRUE) %>% 
+  na.omit() %>% 
+  mutate(Carbon = as.character(Carbon))
+
+############################## MULTI-LAYER .TIF FILE ##########################
+
+## Loading both carbon and food files as a list
+files_list <- here::here(c("data/food_priority1.tif", "data/carbon_priority2.tif"))
+
+## Rasterizing them --> Same rows and columns, but two layers 
+(
+  multi_layer_rs <- rast(files_list)
+)
+
+## Converting the raster to polygons 
+multi_layer_polygons <- as.polygons(multi_layer_rs)
+
+## Converting polygons to sf 
+multi_layer_sf <- st_as_sf(multi_layer_polygons)
+
+
+multi_layer_df_zeros <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+  filter(Food == 1 & Carbon == 0)
+
+multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+  filter(Food == 0 & Carbon == 1) 
+
+multi_layer_df_unused <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+  filter(Food == 0 & Carbon == 0) 
+
+multi_layer_df_all <- as.data.frame(multi_layer_rs, xy = TRUE) 
+
+data <- st_read(here::here("data", "ahupuaa","ahupuaa.shp")) %>% 
+  janitor::clean_names()
+
+## Obtaining the layers from the ahupuaa .shp file 
+st_layers(dsn = here::here("data", "ahupuaa","ahupuaa.shp"))
+
+## Converting .shp file to a simple features collection
+data_sf <- st_as_sf(data) # --> EPSG 3750
+
+## Reprojecting data to WGS84 
+(
+data_new_sf <- st_transform(data, 4326)
+)
+## Checking coordinate reference system 
+st_crs(data_new_sf)
+
+## Converting the wack apostrophies and other characters to ones R can recognize
+data_sf_clean <- data_new_sf %>% 
+  mutate(moku = str_replace_all(moku, pattern = "ʻ", replacement = "'"),
+         mokupuni = str_replace_all(mokupuni, pattern = "ʻ", replacement = "'"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ʻ", replacement = "'"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ā", replacement = "a"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ī", replacement = "i"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ï", replacement = "i"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ō", replacement = "o"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ē", replacement = "e"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "ū", replacement = "u"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "Ï", replacement = "I"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "Ō", replacement = "O"),
+         ahupuaa = str_replace_all(ahupuaa, pattern = "Ā", replacement = "A")) %>%
+  mutate(moku = ifelse(
+    ahupuaa == "Kiauea", "Ko'olau", moku),
+    mokupuni = ifelse(ahupuaa == "Kiauea" & moku == "Ko'olau", "Kaua'i", mokupuni
+      
+    )) %>% 
+  janitor::clean_names()
+
+## Rasterizing data_sf_clean (just in case )
+(
+data_rast <- rast(data_sf_clean)
+)
+
+area_df <- data_sf_clean %>% 
+  as.data.frame() 
+
+
+join_df <- cross_join(area_df_cean, multi_layer_df_all) 
+
+
 ```
 
