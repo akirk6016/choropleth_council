@@ -360,7 +360,7 @@ ggplot() +
 ## Now doing Kauai
 data_vec_kauai <- data_sf_clean %>% 
   filter(mokupuni == "Kaua'i" | mokupuni == "Ni'ihau")
-vect(data_vec_kauai)
+# vect(data_vec_kauai)
 multi_layer_kauai_rs <- crop(multi_layer_rs, extent(data_vec_kauai))
 multi_layer_kauai_df <- as.data.frame(multi_layer_kauai_rs, xy = TRUE)
 landuse_kauai_sf <- st_crop(landuse_sf, data_vec_kauai)
