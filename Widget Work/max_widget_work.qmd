@@ -54,7 +54,7 @@ plot(carbon_data)
 #   geom_raster(data = food_data)
 
 
-#interactive mapping
+#interactive mapping option #1
 tmap_mode(mode = "view")
 
 tm_shape(ahupuaa_raw_sf) + 
@@ -104,18 +104,3 @@ tm_shape(food_sf, name = "Food Only") +
 tm_shape(carbon_sf, name = "Carbon Only") +
   tm_polygons("Carbon")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
