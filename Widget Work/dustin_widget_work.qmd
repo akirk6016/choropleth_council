@@ -118,12 +118,12 @@ vect(data_vec_hawaii)
 ################################ FOOD .TIF FILE ###############################
 
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
-food_file <- here::here("data", "food_priority1.tif")
+food_file <- here::here("data", "food_priority1_100m.tif")
 
 ## Loads it directly as a RasterStack object
-# (
-# food_rs <- stack(here::here("data", "food_priority1.tif"))
-# )
+(
+food_rs <- stack(here::here("data", "food_priority1_100m.tif"))
+)
 
 ## Checking CRS 
 # terra::crs(food_rs)
@@ -147,7 +147,7 @@ food_df <- as.data.frame(food_rs, xy = TRUE) %>%
 ################################ CARBON .TIF FILE #############################
 
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
-carbon_file <- here("data", "carbon_priority2.tif")
+carbon_file <- here("data", "carbon_priority2_100m.tif")
 
 ## Rasterizing carbon_file --> Turns to SpatRaster
 (
@@ -162,7 +162,7 @@ carbon_df <- as.data.frame(carbon_rs, xy = TRUE) %>%
 ############################## MULTI-LAYER .TIF FILE ##########################
 
 ## Loading both carbon and food files as a list
-files_list <- here::here(c("data/food_priority1.tif", "data/carbon_priority2.tif"))
+files_list <- here::here(c("data/food_priority1_100m.tif", "data/carbon_priority2_100m.tif"))
 
 ## Rasterizing them --> Same rows and columns, but two layers 
 (
@@ -194,7 +194,7 @@ values <- extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
 
 # Success he thinks it will be useful! 
 (
-landuse <- st_read(here::here("/Users/dustinduncan/Desktop/ESM 244/Land_Use_Land_Cover_(LULC)/Land_Use_Land_Cover_(LULC).shp")) 
+landuse <- st_read(here::here("data/Land_Use_Land_Cover_(LULC)/Land_Use_Land_Cover_(LULC).shp")) 
 )
 landuse_sf <- st_as_sf(landuse) %>% 
   mutate(landcover = as.factor(landcover)) %>% 
