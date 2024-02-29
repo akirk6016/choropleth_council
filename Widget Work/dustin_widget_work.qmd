@@ -121,23 +121,24 @@ vect(data_vec_hawaii)
 food_file <- here::here("data", "food_priority1_100m.tif")
 
 ## Loads it directly as a RasterStack object
-(
-food_rs <- stack(here::here("data", "food_priority1_100m.tif"))
-)
+# (
+# food_rs <- stack(here::here("data", "food_priority1_100m.tif"))
+# )
 
 ## Checking CRS 
 # terra::crs(food_rs)
-
-## Reprojecting food raster to WGS 84 
-# food_rs_WGS84 <- st_transform(food_rs, 4326)
 
 ## Rasterizing food_file --> Turns to SpatRaster
 (
 food_rs <- rast(food_file)
 )
 
+## Reprojecting food raster to WGS 84 
+(
+food_rs_WGS84 <- project(food_rs, "epsg:4326")
+)
 ## Tells us that the raster is projected in WGS 84 
-# terra::crs(food_data)
+terra::crs(food_rs)
 
 ## Turning food raster into a dataframe for plotting purposes 
 food_df <- as.data.frame(food_rs, xy = TRUE) %>% 
