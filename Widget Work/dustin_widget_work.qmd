@@ -75,13 +75,13 @@ data_sf <- st_as_sf(data) # --> EPSG 3750
 
 ## Reprojecting data to WGS84 
 (
-data_new_sf <- st_transform(data, 4326)
+data_new_sf <- st_transform(data, 3750)
 )
 ## Checking coordinate reference system 
-st_crs(data_new_sf)
+st_crs(data_sf)
 
 ## Converting the wack apostrophies and other characters to ones R can recognize
-data_sf_clean <- data_new_sf %>% 
+data_sf_clean <- data_sf %>% 
   mutate(moku = str_replace_all(moku, pattern = "ʻ", replacement = "'"),
          mokupuni = str_replace_all(mokupuni, pattern = "ʻ", replacement = "'"),
          ahupuaa = str_replace_all(ahupuaa, pattern = "ʻ", replacement = "'"),
@@ -120,6 +120,8 @@ vect(data_vec_hawaii)
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
 food_file <- here::here("data", "food_priority1_100m.tif")
 
+food_file2 <- here::here("data", "food_priority1.tif")
+
 ## Loads it directly as a RasterStack object
 # (
 # food_rs <- stack(here::here("data", "food_priority1_100m.tif"))
@@ -132,11 +134,14 @@ food_file <- here::here("data", "food_priority1_100m.tif")
 (
 food_rs <- rast(food_file)
 )
+(
+food_rs2 <- rast(food_file2)
+)
 
 ## Reprojecting food raster to WGS 84 
-(
-food_rs_WGS84 <- project(food_rs, "epsg:4326")
-)
+# (
+# food_rs_WGS84 <- project(food_rs, "epsg:4326")
+# )
 ## Tells us that the raster is projected in WGS 84 
 terra::crs(food_rs)
 
@@ -196,6 +201,9 @@ values <- extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
 # Success he thinks it will be useful! 
 (
 landuse <- st_read(here::here("data/Land_Use_Land_Cover_(LULC)/Land_Use_Land_Cover_(LULC).shp")) 
+)
+(
+landuse <- st_transform(landuse, 3750)
 )
 landuse_sf <- st_as_sf(landuse) %>% 
   mutate(landcover = as.factor(landcover)) %>% 
@@ -263,6 +271,7 @@ landuse_sf <- st_as_sf(landuse) %>%
   mutate(resample = as.factor(resample))
 
 landuse_vec <- vect(landuse_sf)
+
 
  # st_crs(landuse_sf) # --> EPSG 4326
 
