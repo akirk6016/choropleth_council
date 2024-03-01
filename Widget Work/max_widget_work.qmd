@@ -104,3 +104,62 @@ tm_shape(food_sf, name = "Food Only") +
 tm_shape(carbon_sf, name = "Carbon Only") +
   tm_polygons("Carbon")
 ```
+
+## Load the Intersected Shapefiles
+
+```{r}
+ahu_carbon_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_carbon_intersect.shp"))
+
+ahu_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_intersect.shp"))
+```
+
+### Turn the sf into df
+
+```{r}
+ahu_carbon_df <- ahu_carbon_sf %>% 
+  as.data.frame() %>% 
+  select(-geometry)
+  
+ahu_food_df <- ahu_food_sf %>% 
+  as.data.frame() %>% 
+  select(-geometry)
+```
+
+### Make Area Plots
+
+```{r}
+### carbon ###
+area_carbon_plot <- ggplot(ahu_carbon_df, 
+                    aes(x = mokupuni, y = area_hecta, fill = as.factor(gridcode))) +
+  geom_col(position = "dodge") +
+  theme_bw() 
+
+area_carbon_plot
+
+
+### food ##
+area_food_plot <- ggplot(ahu_food_df, 
+                    aes(x = mokupuni, y = area_hecta, fill = as.factor(gridcode))) +
+  geom_col(position = "dodge") +
+  theme_bw()
+
+area_food_plot
+```
+
+## Make Interactive Maps
+
+```{r}
+# set the mode to interactive
+tmap_mode(mode = "view")
+tmap_options(check.and.fix = TRUE)
+
+# define the layers
+tm_shape(
+```
+
+
+
+
+
+
+
