@@ -40,12 +40,12 @@ function(input, output, session) {
       tm_shape(ahupuaa_raw_sf, name = "Ahupua'a") +
         tm_polygons(alpha = 0.2, border.col = "black",
                     border.alpha = 0.6, lwd = 0.2) +
-        tm_shape(carbon_sf1, name = "Carbon Model") +
-        tm_polygons(col = "gridcode", border.alpha = 0,
-                    title = "Model Output") +
-        tm_shape(food_sf1, name = "Food Model") +
-        tm_polygons(col = "gridcode", border.alpha = 0,
-                    title = "Model Output") +
+        tm_shape(carbon_sf1, name = "Prioritize carbon storage") +
+        tm_polygons(col = "gridcode", border.alpha = 0, palette = "Oranges",
+                    title = "Carbon output") +
+        tm_shape(food_sf1, name = "Prioritize food production") +
+        tm_polygons(col = "gridcode", border.alpha = 0, palette = "Greens",
+                    title = "Food output") +
         tm_scale_bar()
     }) ## end of interactive tmap
 
