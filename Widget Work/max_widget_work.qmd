@@ -127,6 +127,24 @@ ahu_food_df <- ahu_food_sf %>%
   mutate(gridcode = as.factor(gridcode))
 ```
 
+### join the two data sets to prep for Shiny reactivity 
+
+```{r}
+# join all columns
+ahu_model_join_df <- ahu_carbon_df %>% 
+  full_join(ahu_food_df) %>% 
+  mutate(model_type = as.character(FID_carbon))
+
+ahu_model_join_df$model_type <- ifelse(!is.na(ahu_model_join_df$FID_food), "Food", 
+                                       ifelse(!is.na(ahu_model_join_df$FID_carbon), 
+                                              "Carbon", NA))
+
+
+##### HOPEFULLY THIS DF WORKS WITH SHINY REACTIVITY #####
+ahu_model_join_select_df <- ahu_model_join_df %>% 
+  select(mokupuni, gridcode, area_hecta, model_type)
+```
+
 ### Make Area Plots
 
 ```{r}

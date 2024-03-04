@@ -35,12 +35,14 @@ navbarPage(
                sidebarLayout(
                  sidebarPanel("put my widgets here",
 
-                  radioButtons("radio",
-                    label = h4("Choose model output"),
-                    choices = c("Carbon", "Food")
-                  )
+                  radioButtons(
+                    inputId = "model_type",
+                    label = h4("Choose model type"),
+                    choices = c("Prioritize carbon storage" = "Carbon",
+                                "Prioritize food production" = "Food")
+                  ) ## end of radio buttons
                   ),
-                 mainPanel("Area (ha) of model ouputs on each island",
+                 mainPanel("Area (ha) of model ouput on each island",
                            plotOutput("model_plot")
                  ) ## end of main panel
 
