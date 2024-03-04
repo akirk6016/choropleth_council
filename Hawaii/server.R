@@ -24,12 +24,16 @@ function(input, output, session) {
       ggplot(data = model_select()) +
         geom_col(position = "dodge", color = "black", linewidth = 0.2,
                  aes(x = mokupuni, y = area_hecta, fill = gridcode)) +
-        theme_bw() +
         labs(x = "Mokupuni", y = "Area (ha)",
              fill = "Model Output") +
         theme(panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank())
-    }) ## end of reactive model plot
+              panel.grid.minor = element_blank()) +
+        theme(panel.grid.minor = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.background = element_blank(),
+              plot.background = element_blank(),
+              legend.background = element_blank())
+    }, bg = "transparent") ## end of reactive model plot
 
     output$interactive_map <- renderTmap({
       # set the mode to interactive
