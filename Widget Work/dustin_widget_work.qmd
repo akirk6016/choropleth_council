@@ -295,7 +295,7 @@ class(landuse_sf)
 class(data_sf_clean)
 sf_use_s2(FALSE)
 # data_landuse_sf <- st_union(data_sf_clean, landuse_sf, by_feature = geometry)
-
+st_crs(landuse_sf)
 ggplot() + 
   geom_sf(data = landuse_sf, aes(fill = resample, color = resample)) +
   geom_sf(data = data_sf_clean, color = "black", fill = NA) +
@@ -408,6 +408,9 @@ food_df1 <- food_df %>%
 food_df0 <- food_df %>% 
   filter(Food == 0)
 
+food_df %>% 
+  mutate(Food = factor(Food))
+
 ggplot(data = food_df1) + 
   geom_tile(aes(x = x, y = y), fill = "#882222") + 
   coord_equal() + 
@@ -420,11 +423,11 @@ ggplot(data = food_df0) +
 
 food_df_plot <- ggplot(data = food_df) + 
   geom_tile(aes(x = x, y = y, fill = Food)) + 
-  scale_fill_manual(values = c("green", "#882222")) + 
+  scale_color_manual(values = c("0" = "green", "1" = "#882222")) +
   coord_equal() + 
   theme_dark()
 
-food_df_plot
+# food_df_plot
   
 
 # f <- plot(food_data)
