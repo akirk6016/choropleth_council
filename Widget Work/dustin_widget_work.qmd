@@ -15,7 +15,6 @@ execute:
 ---
 
 ```{r}
-#| message: false
 # Loading all my packages 
 rm(list = ls())
 library(tidyverse)
@@ -31,26 +30,14 @@ library(spatstat)
 library(patchwork)
 library(stringr)
 
-```
-
-```{r}
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
-  stars, # spatiotemporal data handling
-  terra, # raster data handling
-  raster, # raster data handling
-  sf, # vector data handling
-  dplyr, # data wrangling
-  stringr, # string manipulation
-  lubridate, # dates handling
   data.table, # data wrangling
   tidyr, # reshape
   tidyUSDA, # download USDA NASS data
   keyring, # API key management
   FedData, # download Daymet data
   daymetr, # download Daymet data
-  ggplot2, # make maps
-  tmap, # make maps
   future.apply, # parallel processing
   CropScapeR, # download CDL data
   prism, # download PRISM data
@@ -178,6 +165,12 @@ multi_layer_sf <- st_as_sf(multi_layer_polygons)
 data_resample <- terra::resample(data_rast, multi_layer_rs, method='bilinear')
 )
 
+multi_layer_df <- as.data.frame(multi_layer_rs, xy = TRUE)
+
+multi_layer_df_longer <- multi_layer_df %>% 
+  pivot_longer(cols = c("Food", "Carbon"),
+               names_to = "priority",
+               values_to = "foodcarbon")
 
 multi_layer_df_food <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
   filter(Food == 1 & Carbon == 0)
@@ -186,7 +179,7 @@ multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
   filter(Food == 0 & Carbon == 1) 
 
 ## Send this down after loading the multi_layers_sr 
-values <- extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
+values <- raster::extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
 
 ########################### LAND USE COVER DATA ###############################
 
@@ -293,13 +286,30 @@ ggplot() +
 ```{r}
 class(landuse_sf)
 class(data_sf_clean)
-sf_use_s2(FALSE)
-# data_landuse_sf <- st_union(data_sf_clean, landuse_sf, by_feature = geometry)
-st_crs(landuse_sf)
 ggplot() + 
   geom_sf(data = landuse_sf, aes(fill = resample, color = resample)) +
-  geom_sf(data = data_sf_clean, color = "black", fill = NA) +
+  geom_sf(data = data_sf_clean, color = "black", fill = NA, size = 0.75) +
   theme(legend.position = "none")
+```
+
+### Moving on from maps and calculating zonal statistics (I think)
+
+```{r}
+intersected_polygons <- sf::st_intersection(data_sf_clean, landuse_sf)
+
+## Filtering out Oahu
+intersected_oahu <- intersected_polygons %>% 
+  filter(mokupuni == "O'ahu")
+## Summing landuse coverage per ahupua'a
+oahu_landuse_sum <- intersected_oahu %>% 
+  group_by(moku, resample) %>% 
+  summarize(landuse_area = sum(st_areasha)) %>% 
+  ungroup()
+
+ggplot() + 
+  geom_sf(data = oahu_landuse_sum, aes(fill = resample, color = moku)) + 
+  scale_color_manual(values = c("black","black","black","black","black","black"))
+
 ```
 
 
@@ -338,12 +348,15 @@ ggplot() +
 data_vec_oahu <- data_sf_clean %>% 
   filter(mokupuni == "O'ahu")
 vect(data_vec_oahu)
-multi_layer_oahu_rs <- crop(multi_layer_rs, extent(data_vec_oahu))
+multi_layer_oahu_rs <- crop(multi_layer_rs, extent(intersected_oahu))
 multi_layer_oahu_df <- as.data.frame(multi_layer_oahu_rs, xy = TRUE)
 landuse_oahu_sf <- st_crop(landuse_sf, data_vec_oahu)
 ggplot() +
   geom_sf(data = landuse_oahu_sf, aes(fill = resample)) +
   geom_sf(data = data_vec_oahu, fill = NA, color = "black" ) +
+  geom_tile(data = multi_layer_oahu_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
+ggplot() + 
+  geom_sf(data = intersected_oahu, aes(fill = resample)) + 
   geom_tile(data = multi_layer_oahu_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 ## Now doing Maui County
