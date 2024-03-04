@@ -32,24 +32,6 @@ function(input, output, session) {
     }) ## end of reactive model plot
 
 
-    # output$model_plot <- renderPlot({
-    #   ggplot(data = model_select()) +
-    #     geom_col(aes(x = mokupuni, y = area_hecta, fill = gridcode))
-    # }) ## end of model plot
-
-      # output$model_plot <- renderPlot({
-      #   ggplot(ahu_carbon_df,
-      #          aes(x = mokupuni, y = area_hecta, fill = gridcode)) +
-      #     geom_col(position = "dodge", color = "black", linewidth = 0.2) +
-      #     theme_bw() +
-      #     scale_fill_manual(values = c("grey", "forestgreen")) +
-      #     labs(x = "Mokupuni", y = "Area (ha)",
-      #          fill = "Model Output", title = "Carbon Storage") +
-      #     theme(panel.grid.major = element_blank(),
-      #           panel.grid.minor = element_blank())
-      # })
-
-
     output$Plotoutput <- renderPlot({
 
         # generate bins based on input$bins from ui.R
