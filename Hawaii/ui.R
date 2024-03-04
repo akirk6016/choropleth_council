@@ -32,32 +32,25 @@ navbarPage(
   tabPanel("Max's widget",
            fluidPage(
              div(
-               selectInput("his input here",
-                           "Max's Widget",
-                           choices = c("What",
-                                       "do",
-                                       "you",
-                                       "want?"))
-             ),
+               sidebarLayout(
+                 sidebarPanel("put my widgets here",
 
-             checkboxGroupInput("checkGroup", label = h3("Model Parameters"),
-                                choices = list("Food Production" = 1,
-                                               "Carbon Storage" = 2,
-                                               "Choice 3" = 3),
-                                selected = 1),
+                  radioButtons("radio",
+                    label = h4("Choose model output"),
+                    choices = c("Carbon", "Food")
+                  )
+                  ),
+                 mainPanel("Area (ha) of model ouputs on each island",
+                           plotOutput("model_plot")
+                 ) ## end of main panel
 
+               ) ## end of sidebar Layout
 
-             hr(),
-             fluidRow(column(3, verbatimTextOutput("value"))
+             ), ## end of div()
 
-              ),
+           ) ## end of fluidPage
 
-            mainPanel("Title",
-                      plotOutput(outputId = "placeholder_plot")
-
-              )
-
-           )), #end of fluidPage
+        ), ## end of tab panel
 
   tabPanel("Abigail's Widget",
            fluidPage(

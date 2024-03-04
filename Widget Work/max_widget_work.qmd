@@ -104,3 +104,102 @@ tm_shape(food_sf, name = "Food Only") +
 tm_shape(carbon_sf, name = "Carbon Only") +
   tm_polygons("Carbon")
 ```
+
+## Load the Intersected Shapefiles
+
+```{r}
+ahu_carbon_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_carbon_intersect.shp"))
+
+ahu_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_intersect.shp"))
+```
+
+### Turn the intersected sf's into df
+
+```{r}
+ahu_carbon_df <- ahu_carbon_sf %>% 
+  as.data.frame() %>% 
+  select(-geometry) %>% 
+  mutate(gridcode = as.factor(gridcode))
+  
+ahu_food_df <- ahu_food_sf %>% 
+  as.data.frame() %>% 
+  select(-geometry) %>% 
+  mutate(gridcode = as.factor(gridcode))
+```
+
+### Make Area Plots
+
+```{r}
+### carbon ###
+area_carbon_plot <- ggplot(ahu_carbon_df, 
+                    aes(x = mokupuni, y = area_hecta, fill = gridcode)) +
+  geom_col(position = "dodge", color = "black", linewidth = 0.2) +
+  theme_bw() +
+  scale_fill_manual(values = c("grey", "forestgreen")) +
+  labs(x = "Mokupuni", y = "Area (ha)", 
+       fill = "Model Output", title = "Carbon Storage") +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+area_carbon_plot
+
+
+### food ##
+area_food_plot <- ggplot(ahu_food_df, 
+                    aes(x = mokupuni, y = area_hecta, fill = gridcode)) +
+  geom_col(position = "dodge", color = "black", linewidth = 0.2) +
+  theme_bw() + 
+  scale_fill_manual(values = c("grey", "orange")) +
+  labs(x = "Mokupuni", y = "Area (ha)", 
+       fill = "Model Output", title = "Food Production") +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+area_food_plot
+```
+
+## Load the new food and carbon polygons as sf's
+
+```{r}
+## carbon ##
+carbon_sf1 <- read_sf(here("data/carbon_polygon/carbon_polygon.shp"))
+
+carbon_sf1 <- carbon_sf1 %>% 
+  mutate(gridcode = as.factor(gridcode))
+
+
+## food ##
+food_sf1 <- read_sf(here("data/food_polygon/food_polygon.shp"))
+
+food_sf1 <- food_sf1 %>% 
+  mutate(gridcode = as.factor(gridcode))
+```
+
+## Make Interactive Maps
+
+```{r}
+custom_colors <- 
+
+# set the mode to interactive
+tmap_mode(mode = "view")
+tmap_options(check.and.fix = TRUE)
+
+# define the layers
+tm_shape(ahupuaa_raw_sf, name = "Ahupua'a") +
+    tm_polygons(alpha = 0.2, border.col = "black", 
+                border.alpha = 0.6, lwd = 0.2) +
+  tm_shape(carbon_sf1, name = "Carbon Model") +
+    tm_polygons(col = "gridcode", border.alpha = 0, 
+                title = "Model Output") +
+  tm_shape(food_sf1, name = "Food Model") +
+    tm_polygons(col = "gridcode", border.alpha = 0, 
+                title = "Model Output") +
+  tm_scale_bar()
+```
+
+
+
+
+
+
+
