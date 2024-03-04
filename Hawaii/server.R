@@ -86,6 +86,7 @@ function(input, output, session) {
         geom_sf(data = reactive_map3(), aes(fill = resample)) +
         geom_sf(data = reactive_map(), fill = NA, color = "black") +
         geom_tile(data = reactive_map2(), inherit.aes = FALSE, aes(x = x, y = y)) +
+        labs(x = "Longitude", y = "Latitude", fill = "Landuse Coverage") +
         theme_bw()
     })
 
