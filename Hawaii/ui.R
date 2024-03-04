@@ -43,7 +43,9 @@ navbarPage(
                   ) ## end of radio buttons
                   ),
                  mainPanel("Area (ha) of model ouput on each island",
-                           plotOutput("model_plot")
+                           plotOutput("model_plot"),
+                           h4("Interactive Map"),
+                           tmapOutput(outputId = "interactive_map")
                  ) ## end of main panel
 
                ) ## end of sidebar Layout

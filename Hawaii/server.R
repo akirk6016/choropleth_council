@@ -31,6 +31,24 @@ function(input, output, session) {
               panel.grid.minor = element_blank())
     }) ## end of reactive model plot
 
+    output$interactive_map <- renderTmap({
+      # set the mode to interactive
+      tmap_mode(mode = "view")
+      tmap_options(check.and.fix = TRUE)
+
+      # define the layers
+      tm_shape(ahupuaa_raw_sf, name = "Ahupua'a") +
+        tm_polygons(alpha = 0.2, border.col = "black",
+                    border.alpha = 0.6, lwd = 0.2) +
+        tm_shape(carbon_sf1, name = "Carbon Model") +
+        tm_polygons(col = "gridcode", border.alpha = 0,
+                    title = "Model Output") +
+        tm_shape(food_sf1, name = "Food Model") +
+        tm_polygons(col = "gridcode", border.alpha = 0,
+                    title = "Model Output") +
+        tm_scale_bar()
+    }) ## end of interactive tmap
+
 
     output$Plotoutput <- renderPlot({
 
