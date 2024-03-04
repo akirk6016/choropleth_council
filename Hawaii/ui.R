@@ -78,20 +78,16 @@ navbarPage(
            fluidPage(
              div(
                selectInput("data",
-                           "Dustin's Widget",
-                           choices = c("Ni'ihau",
-                                       "Kaua'i",
-                                       "Moloka'i",
+                           "Choose your county",
+                           choices = c("Hawai'i",
+                                       "Kaua'i and Ni'ihau",
                                        "O'ahu",
-                                       "Hawai'i",
-                                       "Molokini",
-                                       "Kaho'olawe",
-                                       "Maui",
-                                       "Lāna'i"))
+                                       "Maui County"))
 
              ),
              mainPanel("Title",
-                       plotOutput(outputId = "dustin_plot"))
+                       plotOutput(outputId = "landuse_plot"),
+                       plotOutput(outputId = "county_plot"))
            )),
 
   tabPanel("Group widget",

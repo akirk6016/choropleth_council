@@ -36,6 +36,7 @@ pacman::p_load(
   tidyr, # reshape
   tidyUSDA, # download USDA NASS data
   keyring, # API key management
+  raster,
   FedData, # download Daymet data
   daymetr, # download Daymet data
   future.apply, # parallel processing
@@ -87,6 +88,17 @@ data_sf_clean <- data_sf %>%
     mokupuni = ifelse(ahupuaa == "Kiauea" & moku == "Ko'olau", "Kaua'i", mokupuni
       
     )) %>% 
+  mutate(county = case_when(
+    mokupuni == "Kaua'i" ~ "Kaua'i and Ni'ihau",
+    mokupuni == "Ni'ihau" ~ "Kaua'i and Ni'ihau",
+    mokupuni == "Molokini" ~ "Maui County",
+    mokupuni == "Maui" ~ "Maui County",
+    mokupuni == "Moloka'i" ~ "Maui County",
+    mokupuni == "Lāna'i" ~ "Maui County",
+    mokupuni == "Kaho'olawe" ~ "Maui County",
+    mokupuni == "Hawai'i" ~ "Hawai'i",
+    mokupuni == "O'ahu" ~ "O'ahu"
+  ))
   janitor::clean_names()
 
 ## Rasterizing data_sf_clean (just in case )
@@ -155,8 +167,9 @@ files_list <- here::here(c("data/food_priority1_100m.tif", "data/carbon_priority
 )
 
 ## Converting the raster to polygons 
+(
 multi_layer_polygons <- as.polygons(multi_layer_rs)
-
+)
 ## Converting polygons to sf 
 multi_layer_sf <- st_as_sf(multi_layer_polygons)
 
@@ -168,6 +181,8 @@ data_resample <- terra::resample(data_rast, multi_layer_rs, method='bilinear')
 multi_layer_df <- as.data.frame(multi_layer_rs, xy = TRUE)
 
 multi_layer_df_longer <- multi_layer_df %>% 
+  mutate(Food = as.factor(Food),
+         Carbon = as.factor(Carbon)) %>% 
   pivot_longer(cols = c("Food", "Carbon"),
                names_to = "priority",
                values_to = "foodcarbon")
@@ -192,123 +207,152 @@ landuse <- st_transform(landuse, 3750)
 )
 landuse_sf <- st_as_sf(landuse) %>% 
   mutate(landcover = as.factor(landcover)) %>% 
-  mutate(coverstring = case_when(
-    landcover == "0" ~ "No classification",
-    landcover == "11" ~ "Residential",
-    landcover == "12" ~ "Commercial and services",
-    landcover == "13" ~ "Industrial",
-    landcover == "14" ~ "Transportation, Communications, and Utilities",
-    landcover == "15" ~ "Industrial and Commercial Complexes",
-    landcover == "16" ~ "Mixed Urban or Built-up Land",
-    landcover == "17" ~ "Other Urban or Built-up land",
-    landcover == "21" ~ "Cropland and Pasture",
-    landcover == "22" ~ "Orchards, Groves, Vineyards, Nurseries and Ornamental Horticultural Areas",
-    landcover == "23" ~ "Confined Feeding Operations",
-    landcover == "24" ~ "Other Agricultural Land",
-    landcover == "31" ~ "Herbaceous Rangeland",
-    landcover == "32" ~ "Shrub and Brush Rangeland",
-    landcover == "33" ~ "Mixed Rangeland",
-    landcover == "42" ~ "Evergreen Forest Land",
-    landcover == "51" ~ "Streams and Canals",
-    landcover == "52" ~ "Lakes",
-    landcover == "53" ~ "Reservoirs",
-    landcover == "54" ~ "Bays and Estuaries",
-    landcover == "61" ~ "Forested Wetland",
-    landcover == "62" ~ "Nonforested Wetland",
-    landcover == "72" ~ "Beaches",
-    landcover == "73" ~ "Sandy Areas other than Beaches",
-    landcover == "74" ~ "Bare Exposed Rock",
-    landcover == "75" ~ "Strip Mines, Quarries, and Gravel Pits",
-    landcover == "76" ~ "Transitional Areas",
-    landcover == "77" ~ "Mixed Barren Land"
-  )) %>% 
-  mutate(coverstring = as.character(coverstring)) %>% 
   mutate(resample = case_when(
     landcover == "0" ~ "No classification",
-    landcover == "11" ~ "Residential",
-    landcover == "12" ~ "Industrial or Commercial",
-    landcover == "13" ~ "Industrial or Commercial",
-    landcover == "14" ~ "Transportation",
-    landcover == "15" ~ "Industrial or Commercial",
-    landcover == "16" ~ "Urban",
-    landcover == "17" ~ "Urban",
+    landcover == "11" ~ "Urban or Built-Up",
+    landcover == "12" ~ "Urban or Built-Up",
+    landcover == "13" ~ "Urban or Built-Up",
+    landcover == "14" ~ "Urban or Built-Up",
+    landcover == "15" ~ "Urban or Built-Up",
+    landcover == "16" ~ "Urban or Built-Up",
+    landcover == "17" ~ "Urban or Built-Up",
     landcover == "21" ~ "Agriculture",
     landcover == "22" ~ "Agriculture",
-    landcover == "23" ~ "Confined Feeding Operations",
+    landcover == "23" ~ "Agriculture",
     landcover == "24" ~ "Agriculture",
     landcover == "31" ~ "Rangeland",
     landcover == "32" ~ "Rangeland",
     landcover == "33" ~ "Rangeland",
-    landcover == "42" ~ "Evergreen Forest",
-    landcover == "51" ~ "Water Body",
-    landcover == "52" ~ "Water Body",
-    landcover == "53" ~ "Water Body",
-    landcover == "54" ~ "Water Body",
-    landcover == "61" ~ "Wetland",
-    landcover == "62" ~ "Wetland",
-    landcover == "72" ~ "Beaches",
-    landcover == "73" ~ "Sandy Areas other than Beaches",
-    landcover == "74" ~ "Barren or Unusable land",
-    landcover == "75" ~ "Barren or Unusable land",
-    landcover == "76" ~ "Urban",
-    landcover == "77" ~ "Barren or Unusable land",
+    landcover == "42" ~ "Forest Land",
+    landcover == "51" ~ "Water",
+    landcover == "52" ~ "Water",
+    landcover == "53" ~ "Water",
+    landcover == "54" ~ "Water",
+    landcover == "61" ~ "Wetlands",
+    landcover == "62" ~ "Wetlands",
+    landcover == "72" ~ "Barren",
+    landcover == "73" ~ "Barren",
+    landcover == "74" ~ "Barren",
+    landcover == "75" ~ "Barren",
+    landcover == "76" ~ "Urban or Built-Up",
+    landcover == "77" ~ "Barren",
   )) %>% 
-  mutate(resample = as.factor(resample))
+  mutate(resample = as.factor(resample)) %>% 
+  dplyr::select(!c(createdate, createdby, modifiedda, modifiedby, agency, deliveryda, sourceid, severity, publishdat, comments, featureuid))
 
 landuse_vec <- vect(landuse_sf)
 
+############################### MAX'S INTERSECTED DFS ##########################
+ahu_intersect_carbon_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_carbon_intersect.shp"))
+
+ahu_intersect_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_intersect.shp"))
 
  # st_crs(landuse_sf) # --> EPSG 4326
 
 ggplot() + 
   geom_sf(data = landuse_sf, aes(fill = resample, color = resample)) + 
   theme(legend.position = "none")
-  
-
-ggplot(data_sf_clean) +
-  stat_sf_coordinates()
-
-ggplot(data_sf_clean) +
-  geom_errorbarh(
-    aes(geometry = geometry,
-        xmin = after_stat(x) - 0.1,
-        xmax = after_stat(x) + 0.1,
-        y = after_stat(y),
-        height = 0.04),
-    stat = "sf_coordinates"
-  )
 
 ggplot() + 
   geom_sf(data = data_sf_clean)
-```
-## Intersecting land use coverage data with ahupuaa data 
 
-```{r}
-class(landuse_sf)
-class(data_sf_clean)
 ggplot() + 
   geom_sf(data = landuse_sf, aes(fill = resample, color = resample)) +
   geom_sf(data = data_sf_clean, color = "black", fill = NA, size = 0.75) +
   theme(legend.position = "none")
 ```
 
+## Intersecting land use coverage data with ahupuaa data 
+
+### Turn the intersected sf's into df
+
+```{r}
+ahu_carbon_df <- ahu_intersect_carbon_sf %>% 
+  as.data.frame() %>% 
+  dplyr::select(-geometry) %>% 
+  mutate(gridcode = as.factor(gridcode))
+  
+ahu_food_df <- ahu_intersect_food_sf %>% 
+  as.data.frame() %>% 
+  dplyr::select(-geometry) %>% 
+  mutate(gridcode = as.factor(gridcode))
+```
+
+### Make Area Plots
+
+```{r}
+### carbon ###
+area_carbon_plot <- ggplot(ahu_carbon_df, 
+                    aes(x = mokupuni, y = area_hecta, fill = gridcode)) +
+  geom_col(position = "dodge", color = "black", linewidth = 0.2) +
+  theme_bw() +
+  scale_fill_manual(values = c("grey", "forestgreen")) +
+  labs(x = "Mokupuni", y = "Area (ha)", 
+       fill = "Model Output", title = "Carbon Storage") +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+area_carbon_plot
+
+
+### food ##
+area_food_plot <- ggplot(ahu_food_df, 
+                    aes(x = mokupuni, y = area_hecta, fill = gridcode)) +
+  geom_col(position = "dodge", color = "black", linewidth = 0.2) +
+  theme_bw() + 
+  scale_fill_manual(values = c("grey", "orange")) +
+  labs(x = "Mokupuni", y = "Area (ha)", 
+       fill = "Model Output", title = "Food Production") +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+area_food_plot
+```
 ### Moving on from maps and calculating zonal statistics (I think)
 
 ```{r}
 intersected_polygons <- sf::st_intersection(data_sf_clean, landuse_sf)
 
-## Filtering out Oahu
-intersected_oahu <- intersected_polygons %>% 
-  filter(mokupuni == "O'ahu")
 ## Summing landuse coverage per ahupua'a
-oahu_landuse_sum <- intersected_oahu %>% 
-  group_by(moku, resample) %>% 
-  summarize(landuse_area = sum(st_areasha)) %>% 
+area_landuse_sum <- intersected_polygons %>% 
+  group_by( moku, mokupuni, county, resample) %>% 
+  summarize(landuse_ha = sum(st_areasha, na.rm = TRUE)*(1^-4)) %>% 
   ungroup()
 
+## Filtering out Oahu
+intersected_oahu <- area_landuse_sum %>% 
+  filter(county == "O'ahu")
+
 ggplot() + 
-  geom_sf(data = oahu_landuse_sum, aes(fill = resample, color = moku)) + 
-  scale_color_manual(values = c("black","black","black","black","black","black"))
+  geom_col(data=intersected_oahu, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
+  facet_wrap(~mokupuni)
+
+## Filtering out Hawaii
+intersected_hawaii <- area_landuse_sum %>% 
+  filter(county == "Hawai'i")
+
+ggplot() + 
+  geom_col(data=intersected_hawaii, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
+  facet_wrap(~mokupuni)
+
+## Filtering out kauai
+intersected_kauai <- area_landuse_sum %>% 
+  filter(county == "Kaua'i and Ni'ihau")
+
+ggplot() + 
+  geom_col(data=intersected_kauai, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
+  facet_wrap(~mokupuni)
+
+## Filtering out Maui County
+intersected_maui <- area_landuse_sum %>% 
+  filter(county == "Maui County")
+
+ggplot() + 
+  geom_col(data=intersected_maui, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
+  facet_wrap(~mokupuni)
+
+ggplot() + 
+  geom_sf(data = intersected_oahu, aes(fill = resample)) 
 
 ```
 
@@ -330,23 +374,9 @@ ggplot() +
   geom_tile(data = multi_layer_hawaii_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")  
   theme(legend.position = "none")
 
-## Save this one for later 
-data_vec_hawaii_kona <- data_vec_hawaii %>% 
-  filter(moku == "Kona" | moku == "Hilo")
-vect(data_vec_hawaii_kona)
-multi_layer_hawaii_kona_rs <- crop(multi_layer_rs, extent(data_vec_hawaii_kona))
-multi_layer_hawaii_kona_df <- as.data.frame(multi_layer_hawaii_kona_rs, xy = TRUE)
-landuse_hawaii_kona_sf <- st_crop(landuse_sf, data_vec_hawaii_kona)
-
-ggplot() +
-  # geom_sf(data = landuse_hawaii_kona_sf, aes(fill = resample)) +
-  geom_sf(data = data_vec_hawaii_kona, fill = NA, color = "black") +
-  geom_tile(data = multi_layer_hawaii_kona_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222") + 
-  theme(legend.position = "none")
-
 ## Now doing O'ahu
 data_vec_oahu <- data_sf_clean %>% 
-  filter(mokupuni == "O'ahu")
+  filter(county == "O'ahu")
 vect(data_vec_oahu)
 multi_layer_oahu_rs <- crop(multi_layer_rs, extent(intersected_oahu))
 multi_layer_oahu_df <- as.data.frame(multi_layer_oahu_rs, xy = TRUE)
@@ -361,7 +391,7 @@ ggplot() +
 
 ## Now doing Maui County
 data_vec_maui <- data_sf_clean %>% 
-  filter(mokupuni == "Maui" | mokupuni == "Moloka'i" | mokupuni == "Lāna'i" | mokupuni == "Kaho'olawe" | mokupuni == "Molokini")
+  filter(county == "Maui County")
 vect(data_vec_maui)
 multi_layer_maui_rs <- crop(multi_layer_rs, extent(data_vec_maui))
 multi_layer_maui_df <- as.data.frame(multi_layer_maui_rs, xy = TRUE) 
@@ -374,7 +404,7 @@ ggplot() +
 
 ## Now doing Kauai
 data_vec_kauai <- data_sf_clean %>% 
-  filter(mokupuni == "Kaua'i" | mokupuni == "Ni'ihau")
+  filter(county == "Kaua'i and Ni'ihau")
 # vect(data_vec_kauai)
 multi_layer_kauai_rs <- crop(multi_layer_rs, extent(data_vec_kauai))
 multi_layer_kauai_df <- as.data.frame(multi_layer_kauai_rs, xy = TRUE)
@@ -384,18 +414,6 @@ ggplot() +
   geom_sf(data = data_vec_kauai, fill = NA, color = "black" ) +
   geom_tile(data = multi_layer_kauai_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
-## Now doing Ni'ihau
-data_vec_niihau <- data_sf_clean %>% 
-  filter(mokupuni == "Ni'ihau")
-vect(data_vec_niihau)
-# multi_layer_niihau_rs <- crop(multi_layer_rs, extent(data_vec_niihau))
-# multi_layer_niihau_df <- as.data.frame(multi_layer_niihau_rs, xy = TRUE)
-landuse_niihau_sf <- st_crop(landuse_sf, data_vec_niihau)
-ggplot() +
-  geom_sf(data = landuse_niihau_sf, aes(fill = resample)) +
-  geom_sf(data = data_vec_niihau, fill = NA, color = "black" )
-# +
-  # geom_tile(data = multi_layer_niihau_df, inherit.aes = FALSE, aes(x = x, y = y), fill = "#882222")
 
 # Plotting my different rasters that are selected for food = 1 and carbon = 1 over the islands data 
 ggplot() +
@@ -403,10 +421,6 @@ ggplot() +
   geom_tile(data = multi_layer_df_food, inherit.aes = FALSE, aes(x = x, y = y), fill = "green") + 
   geom_tile(data = multi_layer_df_carbon, aes(x = x, y = y), fill = "#882222", alpha = 0.5) +
   scale_fill_manual(values = c("Carbon" = "#882222", "Food" = "green"))
-  # geom_sf(data = multi_layer_sf, )
-  # geom_spatraster(data = multi_layer_rs,aes(fill = Carbon)) 
-  
-
 
 
 # terra::writeRaster(multi_layer_rs, "data/food_carbon_stack.tif", filetype = "GTiff", overwrite = TRUE)
