@@ -49,7 +49,7 @@ data_sf_dustin <- st_as_sf(data_dustin) # --> EPSG 3750
 
 ## Reprojecting data to WGS84
 (
-  data_new_sf <- st_transform(data_dustin, 3750)
+  data_new_sf_dustin <- st_transform(data_dustin, 3750)
 )
 ## Checking coordinate reference system
 st_crs(data_sf_dustin)

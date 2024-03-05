@@ -68,7 +68,7 @@ function(input, output, session) {
     })
 
     landuse_select <- reactive({
-     landuse_df <- area_landuse_sum %>%
+     landuse_df <- area_landuse_sum_dustin %>%
        filter(county == input$data)
       return(landuse_df)
     }) ## end of model_select reactive function
@@ -85,22 +85,23 @@ function(input, output, session) {
               panel.grid.major = element_blank(),
               panel.background = element_blank(),
               plot.background = element_blank(),
-              legend.background = element_blank()) +
+              legend.background = element_blank(),
+              axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
         facet_wrap(~mokupuni, scales = "free")
-    }, bg = "transparent") ## end of reactive model plot
+    }, bg = "transparent") ## end of reactive landuse plot
 
     reactive_map <- reactive({
-      subset_ahupuaa <- area_landuse_sum %>%
+      subset_ahupuaa <- area_landuse_sum_dustin %>%
         filter(county == input$data)
       return(subset_ahupuaa)
     })
 
     reactive_map2 <- reactive({
-      subset_ahupuaa <- data_sf_clean %>%
+      subset_ahupuaa <- data_sf_clean_dustin %>%
         filter(county == input$data) %>%
         dplyr::select(c(moku, county, geometry))
 
-      multi_layer_reactive_rs <- crop(multi_layer_rs, extent(subset_ahupuaa))
+      multi_layer_reactive_rs <- crop(multi_layer_rs_dustin, extent(subset_ahupuaa))
       multi_layer_reactive_df <- as.data.frame(multi_layer_reactive_rs, xy = TRUE)
 
       return(multi_layer_reactive_df)
@@ -120,7 +121,7 @@ function(input, output, session) {
       ggplot() +
         geom_sf(data = reactive_map(), aes(fill = resample, color = resample)) +
         geom_sf(data = reactive_map(), fill = NA, color = "black", lwd =0.1) +
-        geom_tile(data = reactive_map2(), inherit.aes = FALSE, aes(x = x, y = y)) +
+        geom_tile(data = reactive_map2(), inherit.aes = FALSE, aes(x = x, y = y), color = "violet") +
         labs(x = "Longitude", y = "Latitude", fill = "Landuse Coverage") +
         theme_bw()
     })
