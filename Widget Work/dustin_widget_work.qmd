@@ -98,7 +98,7 @@ data_sf_clean <- data_sf %>%
     mokupuni == "Kaho'olawe" ~ "Maui County",
     mokupuni == "Hawai'i" ~ "Hawai'i",
     mokupuni == "O'ahu" ~ "O'ahu"
-  ))
+  )) %>% 
   janitor::clean_names()
 
 ## Rasterizing data_sf_clean (just in case )
@@ -325,7 +325,11 @@ intersected_oahu <- area_landuse_sum %>%
 
 ggplot() + 
   geom_col(data=intersected_oahu, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
-  facet_wrap(~mokupuni)
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  facet_wrap(~mokupuni, scales = "free")
+
+ggplot() + 
+  geom_sf(data = intersected_oahu, aes(fill = resample)) 
 
 ## Filtering out Hawaii
 intersected_hawaii <- area_landuse_sum %>% 
@@ -333,7 +337,11 @@ intersected_hawaii <- area_landuse_sum %>%
 
 ggplot() + 
   geom_col(data=intersected_hawaii, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
-  facet_wrap(~mokupuni)
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  facet_wrap(~mokupuni, scales = "free")
+
+ggplot() + 
+  geom_sf(data = intersected_hawaii, aes(fill = resample)) 
 
 ## Filtering out kauai
 intersected_kauai <- area_landuse_sum %>% 
@@ -341,7 +349,11 @@ intersected_kauai <- area_landuse_sum %>%
 
 ggplot() + 
   geom_col(data=intersected_kauai, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
-  facet_wrap(~mokupuni)
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  facet_wrap(~mokupuni, scales = "free")
+
+ggplot() + 
+  geom_sf(data = intersected_kauai, aes(fill = resample)) 
 
 ## Filtering out Maui County
 intersected_maui <- area_landuse_sum %>% 
@@ -349,10 +361,12 @@ intersected_maui <- area_landuse_sum %>%
 
 ggplot() + 
   geom_col(data=intersected_maui, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
-  facet_wrap(~mokupuni)
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  facet_wrap(~mokupuni, scales = "free")
 
 ggplot() + 
-  geom_sf(data = intersected_oahu, aes(fill = resample)) 
+  geom_sf(data = intersected_maui, aes(fill = resample)) 
+
 
 ```
 

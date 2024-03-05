@@ -77,7 +77,7 @@ function(input, output, session) {
       ggplot(data = landuse_select()) +
         geom_col(position = "dodge", linewidth = 0.2,
                  aes(x = moku, y = landuse_ha, fill = resample)) +
-        labs(x = "Moku", y = "Area (ha)",
+        labs(x = "Moku", y = "Area in Hectares",
              fill = "Land Cover Class") +
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank()) +
