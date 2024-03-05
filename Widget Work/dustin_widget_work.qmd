@@ -50,7 +50,7 @@ pacman::p_load(
 # Loading data in a reasonable format and doing necessary switcheroos for my plot 
 
 ```{r}
-########################### AHUPUAA .SHP FILE ################################# 
+#### AHUPUAA .SHP FILE ####
 ## Loading ahupuaa .shp file as 'data'
 data <- st_read(here::here("data", "ahupuaa","ahupuaa.shp")) %>% 
   janitor::clean_names()
@@ -115,7 +115,7 @@ data_vec_hawaii <- data_sf_clean %>% filter( mokupuni == "Hawai'i")
 vect(data_vec_hawaii)
 
 
-################################ FOOD .TIF FILE ###############################
+#### FOOD .TIF FILE #####
 
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
 food_file <- here::here("data", "food_priority1_100m.tif")
@@ -141,7 +141,7 @@ food_df <- as.data.frame(food_rs, xy = TRUE) %>%
   na.omit() %>% 
   mutate(Food = as.character(Food))
 
-################################ CARBON .TIF FILE #############################
+#### CARBON .TIF FILE ####
 
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
 carbon_file <- here("data", "carbon_priority2_100m.tif")
@@ -242,13 +242,26 @@ landuse_sf <- st_as_sf(landuse) %>%
 
 landuse_vec <- vect(landuse_sf)
 
+## Intersecting the ahupuaa and landuse dataframe to obtain total area (ha)
+
+intersected_polygons <- sf::st_intersection(data_sf_clean, landuse_sf)
+
+## Summing landuse coverage per ahupua'a
+area_landuse_sum <- intersected_polygons %>% 
+  group_by( moku, mokupuni, county, resample) %>% 
+  summarize(landuse_ha = sum(st_areasha, na.rm = TRUE)*(1^-4)) %>% 
+  ungroup()
+
 ############################### MAX'S INTERSECTED DFS ##########################
 ahu_intersect_carbon_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_carbon_intersect.shp"))
 
 ahu_intersect_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_intersect.shp"))
 
- # st_crs(landuse_sf) # --> EPSG 4326
+```
 
+## Initital plots 
+
+```{r}
 ggplot() + 
   geom_sf(data = landuse_sf, aes(fill = resample, color = resample)) + 
   theme(legend.position = "none")
@@ -262,9 +275,7 @@ ggplot() +
   theme(legend.position = "none")
 ```
 
-## Intersecting land use coverage data with ahupuaa data 
-
-### Turn the intersected sf's into df
+## Plotting intersected landuse and ahupuaa df with geom_col and geom_sf 
 
 ```{r}
 ahu_carbon_df <- ahu_intersect_carbon_sf %>% 
@@ -311,14 +322,6 @@ area_food_plot
 ### Moving on from maps and calculating zonal statistics (I think)
 
 ```{r}
-intersected_polygons <- sf::st_intersection(data_sf_clean, landuse_sf)
-
-## Summing landuse coverage per ahupua'a
-area_landuse_sum <- intersected_polygons %>% 
-  group_by( moku, mokupuni, county, resample) %>% 
-  summarize(landuse_ha = sum(st_areasha, na.rm = TRUE)*(1^-4)) %>% 
-  ungroup()
-
 ## Filtering out Oahu
 intersected_oahu <- area_landuse_sum %>% 
   filter(county == "O'ahu")
