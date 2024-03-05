@@ -13,6 +13,9 @@ library(tmap)
 library(spatstat)
 library(patchwork)
 library(stringr)
+library(tidytext)
+library(pdftools)
+library(ggwordcloud)
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
