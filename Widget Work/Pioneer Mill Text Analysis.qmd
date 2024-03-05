@@ -33,7 +33,6 @@ intrvw_16 <- pdftools::pdf_text(here::here('data', 'Pioneer Mill Interviews','pi
 
 ```
 
-
 ```{r}
 lines_1 <- data.frame(intrvw_1) %>% 
   mutate(page = 1:n()) %>%
@@ -134,7 +133,6 @@ lines_16 <- data.frame(intrvw_16) %>%
 
 ```
 
-
 ```{r}
 words_1 <- lines_1 %>% 
   unnest_tokens(word, text_full) %>% 
@@ -202,7 +200,6 @@ words_16 <- lines_16 %>%
 
 ```
 
-
 ```{r}
 wordcount_1 <- words_1 %>% 
   count(word)
@@ -256,7 +253,6 @@ wordcount_16 <- words_16 %>%
 
 ```
 
-
 ```{r}
 wc_clean_1 <- wordcount_1 %>% 
   anti_join(stop_words, by = 'word') %>% 
@@ -264,29 +260,56 @@ filter(word != 'hy') %>%
   filter(word != 'jk')
 
 wc_clean_2 <- wordcount_2 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'wn') %>% 
+  filter(word != 'ss') %>% 
+  filter(word != 'yeah')
 
 wc_clean_3 <- wordcount_3 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'wn') %>% 
+  filter(word != 'mh') %>% 
+  filter(word != 'yeah')
 
 wc_clean_4 <- wordcount_4 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'wn') %>% 
+  filter(word != 'dr') %>% 
+  filter(word != 'yeah')
   
 
 wc_clean_5 <- wordcount_5 %>% 
-  anti_join(stop_words, by = 'word')
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'wn') %>% 
+  filter(word != 'sh') %>% 
+  filter(word != 'yeah')
 
 wc_clean_6 <- wordcount_6 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'wn') %>% 
+  filter(word != 'av') %>% 
+  filter(word != 'yeah')
 
 wc_clean_7 <- wordcount_7 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'em') %>% 
+  filter(word != 'wn') %>% 
+  filter(word != 'yeah')  %>% 
+  filter(word != 'bb')
 
 wc_clean_8 <- wordcount_8 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'mo') %>% 
+  filter(word != 'jh') %>% 
+  filter(word != 'yeah')
 
 wc_clean_9 <- wordcount_9 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'em') %>% 
+  filter(word != 'mo') %>% 
+  filter(word != 'yeah')  %>% 
+  filter(word != 'fh') %>% 
+  filter(word != 'pu')
 
 wc_clean_10 <- wordcount_10 %>% 
   anti_join(stop_words, by = 'word') %>% 
@@ -296,15 +319,32 @@ filter(word != 'mo') %>%
   filter(word != '')
 
 wc_clean_11 <- wordcount_11 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'wn') %>% 
+  filter(word != 'hf') %>% 
+  filter(word != 'yeah') %>% 
+  filter(word != 'em')
 
 wc_clean_12 <- wordcount_12 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word') %>% 
+filter(word != 'wn') %>% 
+  filter(word != 'df') %>% 
+  filter(word != 'yeah')
+
+
 wc_clean_13 <- wordcount_13 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'ak') %>% 
+  filter(word != 'alk') %>% 
+  filter(word != 'yeah')  %>% 
+  filter(word != 'tk')
+
 
 wc_clean_14 <- wordcount_14 %>% 
-  anti_join(stop_words, by = 'word') 
+  anti_join(stop_words, by = 'word')  %>% 
+filter(word != 'mh') %>% 
+  filter(word != 'hy') %>% 
+  filter(word != 'yeah')
 
 wc_clean_15 <- wordcount_15 %>% 
   anti_join(stop_words, by = 'word') 
@@ -316,4 +356,101 @@ filter(word != 'mo') %>%
   filter(word != 'em') %>% 
   filter(word != 'yeah')
 ```
+
+
+```{r}
+top_1 <- wc_clean_1 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 1)
+
+top_2 <- wc_clean_2 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 2)
+
+top_3 <- wc_clean_3 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 3)
+
+top_4 <- wc_clean_4 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 4)
+
+top_5 <- wc_clean_5 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 5)
+
+
+top_6 <- wc_clean_6 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 6)
+
+top_7 <- wc_clean_7 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 7)
+
+top_8 <- wc_clean_8 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 8)
+
+top_9 <- wc_clean_9 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 9)
+
+top_10 <- wc_clean_10 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 10)
+
+top_11 <- wc_clean_11 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 11)
+
+top_12 <- wc_clean_12 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 12)
+
+top_13 <- wc_clean_13 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 13)
+
+top_14 <- wc_clean_14 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 14)
+
+top_15 <- wc_clean_15 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 15)
+
+top_16 <- wc_clean_16 %>% 
+  arrange(-n) %>% 
+  slice(1:10) %>% 
+  mutate(interview = 16) 
+```
+
+
+```{r}
+
+unions <- rbind(top_1,top_2,top_3,top_4,top_5,top_6,top_7,top_8,top_9,top_10,top_11,top_12,top_13,top_14,top_15,top_16)
+
+# Make some graphs: 
+ggplot(data = unions, aes(x = n, y = word)) +
+ geom_col(fill = "blue") +
+facet_wrap(~interview, scales = "free")
+```
+
+
 
