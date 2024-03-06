@@ -20,6 +20,14 @@ function(input, output, session) {
       return(model_df)
     }) ## end of model_select reactive function
 
+    color_select <- reactive({
+      if(input$model_type == "Carbon"){
+        values = carbon_pal
+      } else {
+        values = food_pal
+      }
+    }) ##
+
     output$model_plot <- renderPlot({
       ggplot(data = model_select()) +
         geom_col(position = "dodge", color = "black", linewidth = 0.2,
@@ -32,7 +40,8 @@ function(input, output, session) {
               panel.grid.major = element_blank(),
               panel.background = element_blank(),
               plot.background = element_blank(),
-              legend.background = element_blank())
+              legend.background = element_blank()) +
+        scale_fill_manual(values = color_select())
     }, bg = "transparent") ## end of reactive model plot
 
     output$interactive_map <- renderTmap({

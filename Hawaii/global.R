@@ -34,6 +34,11 @@ pacman::p_load(
 
 ############################## MAX WIDGET WORK ###############################
 
+#### Define color palettes ####
+
+carbon_pal = c("0" = "peachpuff2", "1" = "darkorange2")
+food_pal = c("0" = "darkseagreen1", "1" = "darkgreen")
+
 #### Loading ahupuaa.shp as an sf ####
 max_ahupuaa_raw_sf <- read_sf(here("data/ahupuaa/ahupuaa.shp"))
 
