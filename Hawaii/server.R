@@ -15,10 +15,18 @@ library(leaflet)
 function(input, output, session) {
 
     model_select <- reactive({
-      model_df <- ahu_model_join_select_df %>%
+      model_df <- max_ahu_model_join_select_df %>%
         dplyr::filter(model_type == input$model_type)
       return(model_df)
     }) ## end of model_select reactive function
+
+    color_select <- reactive({
+      if(input$model_type == "Carbon"){
+        values = carbon_pal
+      } else {
+        values = food_pal
+      }
+    }) ##
 
     output$model_plot <- renderPlot({
       ggplot(data = model_select()) +
@@ -32,7 +40,8 @@ function(input, output, session) {
               panel.grid.major = element_blank(),
               panel.background = element_blank(),
               plot.background = element_blank(),
-              legend.background = element_blank())
+              legend.background = element_blank()) +
+        scale_fill_manual(values = color_select())
     }, bg = "transparent") ## end of reactive model plot
 
     output$interactive_map <- renderTmap({
@@ -41,13 +50,13 @@ function(input, output, session) {
       tmap_options(check.and.fix = TRUE)
 
       # define the layers
-      tm_shape(ahupuaa_raw_sf, name = "Ahupua'a") +
+      tm_shape(max_ahupuaa_raw_sf, name = "Ahupua'a") +
         tm_polygons(alpha = 0.2, border.col = "black",
                     border.alpha = 0.6, lwd = 0.2) +
-        tm_shape(carbon_sf1, name = "Prioritize carbon storage") +
+        tm_shape(max_carbon_sf, name = "Prioritize carbon storage") +
         tm_polygons(col = "gridcode", border.alpha = 0, palette = "Oranges",
                     title = "Carbon output") +
-        tm_shape(food_sf1, name = "Prioritize food production") +
+        tm_shape(max_food_sf, name = "Prioritize food production") +
         tm_polygons(col = "gridcode", border.alpha = 0, palette = "Greens",
                     title = "Food output") +
         tm_scale_bar()

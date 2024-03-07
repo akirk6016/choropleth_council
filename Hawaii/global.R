@@ -34,6 +34,58 @@ pacman::p_load(
 
 ############################## MAX WIDGET WORK ###############################
 
+#### Define color palettes ####
+
+carbon_pal = c("0" = "peachpuff2", "1" = "darkorange2")
+food_pal = c("0" = "darkseagreen1", "1" = "darkgreen")
+
+#### Loading ahupuaa.shp as an sf ####
+max_ahupuaa_raw_sf <- read_sf(here("data/ahupuaa/ahupuaa.shp"))
+
+
+#### Loading carbon & food model outputs as sf's ####
+max_carbon_sf <- read_sf(here("data/carbon_polygon/carbon_polygon.shp"))
+
+max_carbon_sf <- max_carbon_sf %>%
+  mutate(gridcode = as.factor(gridcode))
+
+
+max_food_sf <- read_sf(here("data/food_polygon/food_polygon.shp"))
+
+max_food_sf <- max_food_sf %>%
+  mutate(gridcode = as.factor(gridcode))
+
+
+#### Load the intersected ahupuaa/model data as sf's ####
+max_ahu_carbon_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_carbon_intersect.shp"))
+
+max_ahu_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_intersect.shp"))
+
+# Turn the intersected sf's into df's #
+max_ahu_carbon_df <- max_ahu_carbon_sf %>%
+  as.data.frame() %>%
+  dplyr::select(-geometry) %>%
+  mutate(gridcode = as.factor(gridcode))
+
+max_ahu_food_df <- max_ahu_food_sf %>%
+  as.data.frame() %>%
+  dplyr::select(-geometry) %>%
+  mutate(gridcode = as.factor(gridcode))
+
+# Join the two datasets to prep for shiny reactivity
+max_ahu_model_join_df <- max_ahu_carbon_df %>%
+  full_join(max_ahu_food_df) %>%
+  mutate(model_type = as.character(FID_carbon))
+
+max_ahu_model_join_df$model_type <- ifelse(!is.na(max_ahu_model_join_df$FID_food), "Food",
+                                       ifelse(!is.na(max_ahu_model_join_df$FID_carbon),
+                                              "Carbon", NA))
+
+# DF FOR SHINY REACTIVITY
+max_ahu_model_join_select_df <- max_ahu_model_join_df %>%
+  dplyr::select(mokupuni, gridcode, area_hecta, model_type)
+
+
 ############################## DUSTIN WIDGET WORK ###############################
 #### AHUPUAA .SHP FILE ####
 ## Loading ahupuaa .shp file as 'data'
