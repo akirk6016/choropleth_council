@@ -40,7 +40,9 @@ carbon_pal = c("0" = "peachpuff2", "1" = "darkorange2")
 food_pal = c("0" = "darkseagreen1", "1" = "darkgreen")
 
 #### Loading ahupuaa.shp as an sf ####
-max_ahupuaa_raw_sf <- read_sf(here("data/ahupuaa/ahupuaa.shp"))
+max_ahupuaa_raw_sf <- read_sf(here("data/ahupuaa/ahupuaa.shp")) %>%
+  dplyr::select(Ahupuaa = ahupuaa, Moku = moku, Mokupuni = mokupuni,
+                Acres = gisacres)
 
 
 #### Loading carbon & food model outputs as sf's ####

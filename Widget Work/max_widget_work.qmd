@@ -22,7 +22,9 @@ library(maps)
 ### Load shapefile
 
 ```{r}
-ahupuaa_raw_sf <- read_sf(here("data/ahupuaa/ahupuaa.shp"))
+ahupuaa_raw_sf <- read_sf(here("data/ahupuaa/ahupuaa.shp")) %>%
+  select(Ahupuaa = ahupuaa, Moku = moku, Mokupuni = mokupuni, 
+         Acres = gisacres)
 
 #basic static plot of ahupuaa boundaries
 ggplot() +
