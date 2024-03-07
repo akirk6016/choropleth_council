@@ -109,11 +109,15 @@ data_rast <- rast(data_sf_clean)
 ## Vectorizing data_sf_clean 
 data_vec <- vect(data_sf_clean)
 
+## Trying to convert data_vec to observation window 
+
+ahupuaa_Owin <- as.owin(sf::st_as_sf(data_vec))
+class(ahupuaa_Owin)
 # Filtering data to just hawaii (checking)
 data_vec_hawaii <- data_sf_clean %>% filter( mokupuni == "Hawai'i") 
 # Vectorizing it 
 vect(data_vec_hawaii)
-
+data_owin_hawaii<- as.owin(sf::st_as_sf(data_vec_hawaii))
 
 #### FOOD .TIF FILE #####
 
@@ -137,9 +141,16 @@ food_rs <- rast(food_file)
 terra::crs(food_rs)
 
 ## Turning food raster into a dataframe for plotting purposes 
-food_df <- as.data.frame(food_rs, xy = TRUE) %>% 
+food_sf <- food_rs %>% 
+  as.points(., values=TRUE, na.rm=TRUE, na.all=FALSE) %>% 
+  st_as_sf( xy = TRUE) %>% 
   na.omit() %>% 
-  mutate(Food = as.character(Food))
+  mutate(Food = ifelse(Food > 0, 1, 0),
+    Food = as.character(Food))
+
+food_ones <- food_sf %>% 
+  filter(Food == 1) %>% 
+  summarise(n = n())
 
 #### CARBON .TIF FILE ####
 
@@ -152,10 +163,15 @@ carbon_rs <- rast(carbon_file)
 )
 
 ## Turning carbon raster into a dataframe for plotting purposes
-carbon_df <- as.data.frame(carbon_rs, xy = TRUE) %>% 
+carbon_sf <- carbon_rs %>% 
+  as.points(., values=TRUE, na.rm=TRUE, na.all=FALSE) %>% 
+  st_as_sf( xy = TRUE) %>% 
   na.omit() %>% 
-  mutate(Carbon = as.character(Carbon))
-
+  mutate(Carbon = ifelse(Carbon > 0, 1, 0),
+    Carbon = as.character(Carbon))
+carbon_ones <- carbon_sf %>% 
+  filter(Carbon == 1) %>% 
+  summarise(n = n())
 ############################## MULTI-LAYER .TIF FILE ##########################
 
 ## Loading both carbon and food files as a list
@@ -192,6 +208,16 @@ multi_layer_df_food <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
 
 multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
   filter(Food == 0 & Carbon == 1) 
+
+## Trying to convert it to points 
+multi_layer_ppp_dustin <- as.points(multi_layer_rs, values=TRUE, na.rm=TRUE, na.all=FALSE) 
+
+multi_layer_ppp_sf_dustin <- st_as_sf(multi_layer_ppp_dustin, xy = TRUE) %>% 
+  mutate(Carbon = ifelse(Carbon > 0, 1, 0),
+         Food = ifelse(Food > 0, 1, 0)) %>% 
+  pivot_longer(cols = c("Food", "Carbon"),
+               names_to = "priority",
+               values_to = "foodcarbon")
 
 ## Send this down after loading the multi_layers_sr 
 values <- raster::extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
@@ -348,7 +374,7 @@ ggplot() +
 
 ## Filtering out kauai
 intersected_kauai <- area_landuse_sum %>% 
-  filter(county == "Kaua'i and Ni'ihau")
+  filter(mokupuni == "Kaua'i")
 
 ggplot() + 
   geom_col(data=intersected_kauai, aes(x = moku, y = landuse_ha, fill = resample), position = "dodge") + 
@@ -371,6 +397,92 @@ ggplot() +
   geom_sf(data = intersected_maui, aes(fill = resample)) 
 
 
+```
+
+## Choropleth!!
+
+```{r}
+## Doing it all 
+vect(data_sf_clean)
+multi_sf <- data_sf_clean %>% 
+  st_join(multi_layer_ppp_sf_dustin)
+
+priority_counts_sf_all <- multi_sf %>% 
+  group_by(priority, ahupuaa) %>% 
+  summarize(n_ones = sum(!is.na(foodcarbon)))
+
+prior_split <- split(priority_counts_sf_all, ~priority, drop = FALSE)
+  
+
+?split
+ggplot(data = priority_counts_sf_all) + 
+  geom_sf(aes(group_by = priority, fill = n_ones), color = "grey90", size = 0.1) + 
+  scale_fill_gradientn(colors = c("lightgray","lightgreen", "green", "forestgreen", "darkgreen")) + 
+  theme_minimal()
+
+## Hawaii
+# Filtering data 
+data_vec_hawaii <- data_sf_clean %>% filter(county == "Hawai'i") 
+# Vectorizing it 
+vect(data_vec_hawaii)
+hawaii_multi_sf <- data_vec_hawaii %>% 
+  st_join(multi_layer_ppp_sf_dustin)
+
+priority_counts_sf <- hawaii_multi_sf %>% 
+  group_by(ahupuaa, priority) %>% 
+  summarize(n_ones = sum(!is.na(foodcarbon)))
+ggplot(data = priority_counts_sf) + 
+  geom_sf(aes(fill = n_ones), color = "grey90", size = 0.1) + 
+  scale_fill_gradientn(colors = c("lightgray","lightgreen", "green", "forestgreen", "darkgreen")) + 
+  theme_minimal()
+
+## Oahu
+# Filtering data 
+data_vec_oahu <- data_sf_clean %>% filter(county == "O'ahu") 
+# Vectorizing it 
+vect(data_vec_oahu)
+oahu_multi_sf <- data_vec_oahu %>% 
+  st_join(multi_layer_ppp_sf_dustin)
+
+priority_counts_sf_oahu <- oahu_multi_sf %>% 
+  group_by(ahupuaa, priority) %>% 
+  summarize(n_ones = sum(!is.na(foodcarbon)))
+ggplot(data = priority_counts_sf_oahu) + 
+  geom_sf(aes(fill = n_ones), color = "grey90", size = 0.1) + 
+  scale_fill_gradientn(colors = c("lightgray","lightgreen", "green", "forestgreen", "darkgreen")) + 
+  theme_minimal()
+
+## Maui
+# Filtering data 
+data_vec_maui <- data_sf_clean %>% filter(county == "Maui County") 
+# Vectorizing it 
+vect(data_vec_hawaii)
+maui_multi_sf <- data_vec_maui %>% 
+  st_join(multi_layer_ppp_sf_dustin)
+
+priority_counts_sf_maui <- maui_multi_sf %>% 
+  group_by(ahupuaa, priority) %>% 
+  summarize(n_ones = sum(!is.na(foodcarbon)))
+ggplot(data = priority_counts_sf_maui) + 
+  geom_sf(aes(fill = n_ones), color = "grey90", size = 0.1) + 
+  scale_fill_gradientn(colors = c("lightgray","lightgreen", "green", "forestgreen", "darkgreen")) + 
+  theme_minimal()
+
+## Kauai
+# Filtering data 
+data_vec_kauai <- data_sf_clean %>% filter(county == "Kaua'i and Ni'ihau") 
+# Vectorizing it 
+vect(data_vec_kauai)
+kauai_multi_sf <- data_vec_kauai %>% 
+  st_join(multi_layer_ppp_sf_dustin)
+
+priority_counts_sf_kauai <- kauai_multi_sf %>% 
+  group_by(ahupuaa, priority) %>% 
+  summarize(n_ones = sum(!is.na(foodcarbon)))
+ggplot(data = priority_counts_sf_kauai) + 
+  geom_sf(aes(fill = n_ones), color = "grey90", size = 0.1) + 
+  scale_fill_gradientn(colors = c("lightgray","lightgreen", "green", "forestgreen", "darkgreen")) + 
+  theme_minimal()
 ```
 
 
