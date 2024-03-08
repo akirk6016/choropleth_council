@@ -136,7 +136,7 @@ data_sf_clean_dustin <- data_sf_dustin %>%
     mokupuni == "Lāna'i" ~ "Maui County",
     mokupuni == "Kaho'olawe" ~ "Maui County",
     mokupuni == "Hawai'i" ~ "Hawai'i",
-    mokupuni == "O'ahu" ~ "O'ahu"
+    mokupuni == "O'ahu" ~ "Honolulu County"
   )) %>%
   janitor::clean_names()
 

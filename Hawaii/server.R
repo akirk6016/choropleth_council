@@ -85,7 +85,7 @@ function(input, output, session) {
     output$landuse_plot <- renderPlot({
       ggplot(data = landuse_select()) +
         geom_col(position = "dodge", linewidth = 0.2,
-                 aes(x = moku, y = landuse_ha, fill = resample)) +
+                 aes(x = moku, y = landuse_ha, fill = resample), color = "black") +
         labs(x = "Moku", y = "Area in Hectares",
              fill = "Land Cover Class") +
         theme(panel.grid.major = element_blank(),
@@ -96,6 +96,7 @@ function(input, output, session) {
               plot.background = element_blank(),
               legend.background = element_blank(),
               axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+        ggtitle("Total Hectares of Landuse Coverage in", req(input$data)) +
         facet_wrap(~mokupuni, scales = "free")
     }, bg = "transparent") ## end of reactive landuse plot
 
@@ -117,21 +118,20 @@ function(input, output, session) {
     })
 
     # reactive_map3 <- reactive({
-    #   subset_ahupuaa <- data_sf_clean %>%
+    #   subset_ahupuaa <- data_sf_clean_dustin %>%
     #     filter(county == input$data) %>%
     #     dplyr::select(c(moku, county, geometry))
-    #   vect(subset_ahupuaa)
-    #   landuse_reactive_sf <- st_crop(landuse_sf, subset_ahupuaa)
     #
-    #   return(landuse_reactive_sf)
+    #   return(subset_ahupuaa)
     # })
 
     output$county_plot <- renderPlot({
       ggplot() +
-        geom_sf(data = reactive_map(), aes(fill = resample, color = resample)) +
+        geom_sf(data = reactive_map(), aes(fill = resample)) +
         geom_sf(data = reactive_map(), fill = NA, color = "black", lwd =0.1) +
         geom_tile(data = reactive_map2(), inherit.aes = FALSE, aes(x = x, y = y), color = "violet") +
-        labs(x = "Longitude", y = "Latitude", fill = "Landuse Coverage") +
+        labs(x = "Longitude", y = "Latitude", fill = "Landuse Coverage", color = "") +
+        ggtitle(req(input$data)) +
         theme_bw()
     })
 

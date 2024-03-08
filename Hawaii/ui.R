@@ -89,9 +89,9 @@ navbarPage(
                selectInput("data",
                            "Choose your county",
                            choices = c("Hawai'i",
-                                       "Kaua'i and Ni'ihau",
-                                       "O'ahu",
-                                       "Maui County"))
+                                       "Maui County",
+                                       "Honolulu County",
+                                       "Kaua'i and Ni'ihau"))
 
              ),
              mainPanel("Title",
