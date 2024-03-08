@@ -36,7 +36,7 @@ pacman::p_load(
 
 #### Define color palettes ####
 
-carbon_pal = c("0" = "peachpuff2", "1" = "darkorange2")
+carbon_pal = c("0" = "bisque1", "1" = "darkorange2")
 food_pal = c("0" = "darkseagreen1", "1" = "darkgreen")
 
 #### Loading ahupuaa.shp as an sf ####
@@ -411,67 +411,67 @@ lines_16 <- data.frame(intrvw_16) %>%
 
 words_1 <- lines_1 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_1)
+  dplyr::select(-intrvw_1)
 
 words_2 <- lines_2 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_2)
+  dplyr::select(-intrvw_2)
 
 words_3 <- lines_3 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_3)
+  dplyr::select(-intrvw_3)
 
 words_4 <- lines_4 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_4)
+  dplyr::select(-intrvw_4)
 
 words_5 <- lines_5 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_5)
+  dplyr::select(-intrvw_5)
 
 words_6 <- lines_6 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_6)
+  dplyr::select(-intrvw_6)
 
 words_7 <- lines_7 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_7)
+  dplyr::select(-intrvw_7)
 
 words_8 <- lines_8 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_8)
+  dplyr::select(-intrvw_8)
 
 words_9 <- lines_9 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_9)
+  dplyr::select(-intrvw_9)
 
 words_10 <- lines_10 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_10)
+  dplyr::select(-intrvw_10)
 
 words_11 <- lines_11 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_11)
+  dplyr::select(-intrvw_11)
 
 words_12 <- lines_12 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_12)
+  dplyr::select(-intrvw_12)
 
 words_13 <- lines_13 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_13)
+  dplyr::select(-intrvw_13)
 
 words_14 <- lines_14 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_14)
+  dplyr::select(-intrvw_14)
 
 words_15 <- lines_15 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_15)
+  dplyr::select(-intrvw_15)
 
 words_16 <- lines_16 %>%
   unnest_tokens(word, text_full) %>%
-  select(-intrvw_16)
+  dplyr::select(-intrvw_16)
 
 wordcount_1 <- words_1 %>%
   count(word)

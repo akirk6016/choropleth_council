@@ -56,32 +56,32 @@ navbarPage(
 
         ), ## end of tab panel
 
-  tabPanel("Pioneer Mill Interview Text Analysis",
-           fluidPage(
-             div(
-               sidebarLayout(
-                 sidebarPanel(
-                   selectInput("dataset", "Choose an Interview:",
-                               choices = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16")),
-
-                   # Input: Specify the number of observations to view ----
-                   numericInput("words", "Number of top words to view:", 10),
-
-
-
-                   # Input: actionButton() to defer the rendering of output ----
-                   # until the user explicitly clicks the button (rather than
-                   # doing it immediately when inputs change). This is useful if
-                   # the computations required to render output are inordinately
-                   # time-consuming.
-                   actionButton("update", "Update View"),
-
-                 ),
-
-               )
-
-             )),
-
+  # tabPanel("Pioneer Mill Interview Text Analysis",
+  #          fluidPage(
+  #            div(
+  #              sidebarLayout(
+  #                sidebarPanel(
+  #                  selectInput("dataset", "Choose an Interview:",
+  #                              choices = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16")),
+  #
+  #                  # Input: Specify the number of observations to view ----
+  #                  numericInput("words", "Number of top words to view:", 10),
+  #
+  #
+  #
+  #                  # Input: actionButton() to defer the rendering of output ----
+  #                  # until the user explicitly clicks the button (rather than
+  #                  # doing it immediately when inputs change). This is useful if
+  #                  # the computations required to render output are inordinately
+  #                  # time-consuming.
+  #                  actionButton("update", "Update View"),
+  #
+  #                ),
+  #
+  #              )
+  #
+  #            )),
+  # ), ## end of tab panel
 
   tabPanel("Dustin's widget",
            fluidPage(
