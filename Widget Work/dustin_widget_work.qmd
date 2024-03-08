@@ -263,7 +263,7 @@ landuse_sf <- st_as_sf(landuse) %>%
     landcover == "76" ~ "Urban or Built-Up",
     landcover == "77" ~ "Barren",
   )) %>% 
-  mutate(resample = as.factor(resample)) %>% 
+  mutate(resample = as.factor(resample)) 
   dplyr::select(!c(createdate, createdby, modifiedda, modifiedby, agency, deliveryda, sourceid, severity, publishdat, comments, featureuid))
 
 landuse_vec <- vect(landuse_sf)
