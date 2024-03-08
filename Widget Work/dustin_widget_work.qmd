@@ -263,7 +263,7 @@ landuse_sf <- st_as_sf(landuse) %>%
     landcover == "76" ~ "Urban or Built-Up",
     landcover == "77" ~ "Barren",
   )) %>% 
-  mutate(resample = as.factor(resample)) 
+  mutate(resample = as.factor(resample)) %>% 
   dplyr::select(!c(createdate, createdby, modifiedda, modifiedby, agency, deliveryda, sourceid, severity, publishdat, comments, featureuid))
 
 landuse_vec <- vect(landuse_sf)
@@ -271,6 +271,10 @@ landuse_vec <- vect(landuse_sf)
 ## Intersecting the ahupuaa and landuse dataframe to obtain total area (ha)
 
 intersected_polygons <- sf::st_intersection(data_sf_clean, landuse_sf)
+
+intersected_priority_ <- sf::st_intersection(multi_layer_ppp_sf_dustin, intersected_polygons)
+
+intersected_carbon <- sf::st_intersection(data_sf_clean, ahu_intersect_carbon_sf)
 
 ## Summing landuse coverage per ahupua'a
 area_landuse_sum <- intersected_polygons %>% 
