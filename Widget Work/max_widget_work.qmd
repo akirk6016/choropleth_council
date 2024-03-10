@@ -219,8 +219,72 @@ tm_shape(ahupuaa_raw_sf, name = "Ahupua'a") +
 tmaptools::palette_explorer()
 ```
 
+## Load the layers of model output intersected with mokupuni/moku
+
+```{r}
+# load the layers
+moku_carbon_sf <- read_sf(here("data/mokupuni_moku_food_intersect/moku_carbon_intersect.shp"))
+
+moku_food_sf <- read_sf(here("data/mokupuni_moku_food_intersect/moku_intersect_food.shp"))
 
 
+# convert them into dataframes
+moku_carbon_df <- moku_carbon_sf %>% 
+  as.data.frame() %>% 
+  select(-geometry) %>% 
+  mutate(gridcode = as.factor(gridcode))
+  
+moku_food_df <- moku_food_sf %>% 
+  as.data.frame() %>% 
+  select(-geometry) %>% 
+  mutate(gridcode = as.factor(gridcode))
+
+
+# join all columns
+moku_model_join_df <- moku_carbon_df %>% 
+  full_join(moku_food_df) %>% 
+  mutate(model_type = as.character(FID_carbon))
+
+moku_model_join_df$model_type <- ifelse(!is.na(moku_model_join_df$FID_food_p), "Food", 
+                                       ifelse(!is.na(moku_model_join_df$FID_carbon), 
+                                              "Carbon", NA))
+
+
+##### HOPEFULLY THIS DF WORKS WITH SHINY REACTIVITY #####
+moku_model_join_select_df <- moku_model_join_df %>% 
+  select(moku, mokupuni, gridcode, area_hecta, model_type)
+```
+
+### Plot Results
+
+```{r}
+### carbon ###
+ggplot(moku_carbon_df, 
+                    aes(x = moku, y = area_hecta, fill = gridcode)) +
+  geom_col(position = "dodge", color = "black", linewidth = 0.2) +
+  theme_bw() + 
+  facet_wrap(~mokupuni, scales = 'free') +
+  scale_fill_manual(values = c("grey", "forestgreen")) +
+  labs(x = "Mokupuni", y = "Area (ha)", 
+       fill = "Model Output", title = "Carbon Storage") +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+
+
+### food ##
+ggplot(moku_food_df, 
+                    aes(x = moku, y = area_hecta, fill = gridcode)) +
+  geom_col(position = "dodge", color = "black", linewidth = 0.2) +
+  theme_bw() + 
+  facet_wrap(~mokupuni, scales = 'free') +
+  scale_fill_manual(values = c("grey", "orange")) +
+  labs(x = "Mokupuni", y = "Area (ha)", 
+       fill = "Model Output", title = "Food Production") +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+```
 
 
 
