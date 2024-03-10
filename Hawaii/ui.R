@@ -33,28 +33,69 @@ navbarPage(
            fluidPage(
              div(
                sidebarLayout(
-                 sidebarPanel("put my widgets here",
+                 sidebarPanel(style = "max-height: 30vh;",
+                              "put my widgets here",
+                              radioButtons(
+                                inputId = "model_type",
+                                label = h4("Choose model type"),
+                                choices = c("Prioritize carbon storage" = "Carbon",
+                                            "Prioritize food production" = "Food")
+                              ), ## end of radio buttons
+                              width = 3
+                 ),
+             mainPanel(
+                       fluidRow(
+                         column(
+                           width = 12,
+                           offset = 0,
+                           div("Area (ha) of model ouput on each island", align = 'center'),
+                           div(plotOutput("model_plot")), align = 'center')),
+                       fluidRow(
+                         column(
+                           width = 12,
+                           offset = 0,
+                           div(h3("Interactive Map"), align = 'center'),
+                           div(tmapOutput(outputId = "interactive_map")), align = 'center'))
+                   )## end of main panel
+                  ## end of main panel fluid row
 
-                  radioButtons(
-                    inputId = "model_type",
-                    label = h4("Choose model type"),
-                    choices = c("Prioritize carbon storage" = "Carbon",
-                                "Prioritize food production" = "Food")
-                  ) ## end of radio buttons
-                  ),
-                 mainPanel("Area (ha) of model ouput on each island",
-                           plotOutput("model_plot"),
-                           h3("Interactive Map"),
-                           tmapOutput(outputId = "interactive_map")
-                 ) ## end of main panel
-
-               ) ## end of sidebar Layout
+                )## end of sidebar Layout
 
              ), ## end of div()
 
            ) ## end of fluidPage
 
-        ), ## end of tab panel
+
+  ), ## end of tab panel
+
+  # tabPanel("Max's widget",
+  #          fluidPage(
+  #            div(
+  #              sidebarLayout(
+  #                sidebarPanel("put my widgets here",
+  #
+  #                 radioButtons(
+  #                   inputId = "model_type",
+  #                   label = h4("Choose model type"),
+  #                   choices = c("Prioritize carbon storage" = "Carbon",
+  #                               "Prioritize food production" = "Food")
+  #                 ) ## end of radio buttons
+  #                 ), mainPanel("Area (ha) of model ouput on each island",
+  #                          plotOutput("model_plot"),
+  #                          h3("Interactive Map"),
+  #                          tmapOutput(outputId = "interactive_map", width = "100%")
+  #                 )## end of main panel
+  #
+  #
+  #
+  #              ) ## end of sidebar Layout
+  #
+  #            ), ## end of div()
+  #
+  #          ) ## end of fluidPage
+  #
+  #
+  #       ), ## end of tab panel
 
   # tabPanel("Pioneer Mill Interview Text Analysis",
   #          fluidPage(
@@ -85,19 +126,36 @@ navbarPage(
 
   tabPanel("Dustin's widget",
            fluidPage(
-             div(
+             fluidRow(
+               column(
+                 width = 4,
+                 offset = 4,
                selectInput("data",
                            "Choose your county",
                            choices = c("Hawai'i",
                                        "Maui County",
                                        "Honolulu County",
-                                       "Kaua'i and Ni'ihau"))
+                                       "Kaua'i and Ni'ihau")),
+               align = "center"
+               )
 
              ),
-             mainPanel("Title",
-                       plotOutput(outputId = "landuse_plot"),
-                       plotOutput(outputId = "county_plot"))
-           )),
+             fluidRow(
+               column(
+                 width = 6,
+                 offset = 3,
+              mainPanel(
+                "Landuse Coverage in the Hawai'ian Islands",)),
+                column(
+                width = 8,
+                offset = 2,
+                plotOutput(outputId = "landuse_plot"),
+                plotOutput(outputId = "county_plot")
+                ),
+                align = 'center',
+                style = 'width = 100%;'
+                ))
+              ),
 
   tabPanel("Group widget",
            fluidPage(

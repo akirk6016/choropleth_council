@@ -287,6 +287,7 @@ ahu_intersect_carbon_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_carbon
 
 ahu_intersect_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_intersect.shp"))
 
+
 ```
 
 ## Initital plots 
