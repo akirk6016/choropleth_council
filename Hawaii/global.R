@@ -16,6 +16,8 @@ library(stringr)
 library(tidytext)
 library(pdftools)
 library(ggwordcloud)
+library(MetBrewer)
+library(textdata)
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
@@ -726,4 +728,25 @@ unions <- rbind(top_1,top_2,top_3,top_4,top_5,top_6,top_7,top_8,top_9,top_10,top
 ggplot(data = unions, aes(x = n, y = word)) +
   geom_col(fill = "blue") +
   facet_wrap(~interview, scales = "free")
+
+unions_nrc <- unions %>%
+  inner_join(get_sentiments("nrc"), by = 'word')
+
+
+
+unions_nrc_counts <- unions_nrc %>%
+  group_by(interview, sentiment) %>%
+  summarize(n = n())
+
+
+
+
+unions_plot <- ggplot(data = unions_nrc_counts, aes(x = n, y = sentiment, fill = sentiment)) +
+  geom_col() +
+  facet_wrap(~interview) +
+  labs(x = "Wordcount", y = "Sentiment") +
+  theme_bw() +
+  scale_fill_manual(values =met.brewer("Benedictus", 10)) +
+  guides(fill="none")
+
 
