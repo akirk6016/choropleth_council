@@ -14,6 +14,14 @@ library(leaflet)
 # Define server logic required to draw a histogram
 function(input, output, session) {
 
+    output$overview_image <- renderImage({
+
+      list(src = "www/hawaii_image.jpeg",
+           width = "75%",
+           height = 500)
+    }, deleteFile = F)
+
+
     model_select <- reactive({
       model_df <- max_ahu_model_join_select_df %>%
         dplyr::filter(model_type == input$model_type)

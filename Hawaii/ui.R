@@ -25,17 +25,18 @@ We will also use spatial data of priority areasidentfied by residents to compare
 Additionally, we will use interview data retrieved ScholarSpace, a repository managed by the University of Hawaii at Manoa,
 to conducr a sentiment analysis on the interviewees experiences growing up on Pioneer Mill'),
 
+           imageOutput("overview_image")
+
            ),
 
-  tabPanel("Max's widget",
+  tabPanel("Land prioritization models",
            fluidPage(
              div(
                sidebarLayout(
                  sidebarPanel(style = "max-height: 30vh;",
-                              "put my widgets here",
                               radioButtons(
                                 inputId = "model_type",
-                                label = h4("Choose model type"),
+                                label = h5("Choose model type"),
                                 choices = c("Prioritize carbon storage" = "Carbon",
                                             "Prioritize food production" = "Food")
                               ), ## end of radio buttons
@@ -46,14 +47,31 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
                          column(
                            width = 12,
                            offset = 0,
-                           div("Area (ha) of model ouput on each island", align = 'center'),
-                           div(plotOutput("model_plot")), align = 'center')),
+                           div(h5("Area (ha) of model ouput on each island", align = 'center')),
+                           div(plotOutput("model_plot")), align = 'center'),
+                           div(p(style = "text-align: font-size = 12px",
+                                 "Area (ha) of model output on each mokupuni (island). Land
+                                 prioritization models that maximized only carbon sequestion are
+                                 shown in shades of orange. A value of 1 indicates an area that
+                                 the model identified as important for carbon sequestration, and a value
+                                 of 0 indicates an area not identfied by the model as important
+                                 for this metric. Models that prioritized land acquisition based on
+                                 potential for food production are shown in green. Again, a value of 1
+                                 indicates areas with a high potential for food production, and values of
+                                 0 not."))),
                        fluidRow(
                          column(
                            width = 12,
                            offset = 0,
-                           div(h3("Interactive Map"), align = 'center'),
-                           div(tmapOutput(outputId = "interactive_map")), align = 'center'))
+                           div(h5("Interactive map showing model results"), align = 'center'),
+                           div(tmapOutput(outputId = "interactive_map")), align = 'center'),
+                           div(p(style = "text-align: font-size = 12px",
+                                 "This interactive map shows the results of land prioritization models
+                                 developed by Nākoa Farrant, a PhD candidate at the
+                                 Bren School of Environemntal Science & Management. The color scheme
+                                 for each model outout aligns with the bar graph above, and
+                                 a shapefile of Ahupuaʻa's is included below the model results. "))),
+
                    )## end of main panel
                   ## end of main panel fluid row
 
