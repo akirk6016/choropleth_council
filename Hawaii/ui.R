@@ -131,11 +131,8 @@ navbarPage(
                  width = 4,
                  offset = 4,
                selectInput("data",
-                           "Choose your county",
-                           choices = c("Hawai'i",
-                                       "Maui County",
-                                       "Honolulu County",
-                                       "Kaua'i and Ni'ihau")),
+                           "Choose county",
+                           choices = unique(data_sf_clean_dustin$mokupuni)),
                align = "center"
                )
 

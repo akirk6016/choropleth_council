@@ -201,10 +201,12 @@ carbon_df_dustin <- as.data.frame(carbon_rs_dustin, xy = TRUE) %>%
 files_list_dustin <- here::here(c("data/food_priority1_100m.tif", "data/carbon_priority2_100m.tif"))
 
 ## Rasterizing them --> Same rows and columns, but two layers
+
 (
   multi_layer_rs_dustin <- rast(files_list_dustin)
 )
-
+# Take the multi_layer_rs_dustin file and increase its bounding box to that of data_sf_clean_dustin.
+multi_layer_rs_dustin <- extend(multi_layer_rs_dustin, data_sf_dustin)
 ## Converting the raster to polygons
 (
   multi_layer_polygons_dustin <- as.polygons(multi_layer_rs_dustin)
@@ -218,6 +220,7 @@ multi_layer_sf <- st_as_sf(multi_layer_polygons_dustin)
 )
 
 multi_layer_df_dustin <- as.data.frame(multi_layer_rs_dustin, xy = TRUE)
+
 
 multi_layer_df_longer_dustin <- multi_layer_df_dustin %>%
   mutate(Food = as.factor(Food),

@@ -181,7 +181,7 @@ files_list <- here::here(c("data/food_priority1_100m.tif", "data/carbon_priority
 (
   multi_layer_rs <- rast(files_list)
 )
-
+multi_layer_rs_dustin <- extend(multi_layer_rs, data_sf)
 ## Converting the raster to polygons 
 (
 multi_layer_polygons <- as.polygons(multi_layer_rs)

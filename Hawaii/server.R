@@ -78,7 +78,7 @@ function(input, output, session) {
 
     landuse_select <- reactive({
      landuse_df <- area_landuse_sum_dustin %>%
-       filter(county == input$data)
+       filter(mokupuni == input$data)
       return(landuse_df)
     }) ## end of model_select reactive function
 
@@ -88,6 +88,13 @@ function(input, output, session) {
                  aes(x = moku, y = landuse_ha, fill = resample), color = "black") +
         labs(x = "Moku", y = "Area in Hectares",
              fill = "Land Cover Class") +
+        scale_fill_manual(values = c("Agriculture" = "coral2",
+                                     "Urban or Built-Up" = "peachpuff2",
+                                     "Forest Land" = "darkgreen",
+                                     "Water" = "cyan2",
+                                     "Wetlands" = "cyan4",
+                                     "Rangeland" = "gold2",
+                                     "Barren" = "peachpuff4")) +
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank()) +
         theme(panel.grid.minor = element_blank(),
@@ -96,21 +103,21 @@ function(input, output, session) {
               plot.background = element_blank(),
               legend.background = element_blank(),
               axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-        ggtitle("Total Hectares of Landuse Coverage in:") +
+        ggtitle('Total Hectares of Landuse Coverage in:') +
         theme(plot.title = element_text(face = "bold", hjust = 0.5)) +
         facet_wrap(~mokupuni, scales = "free")
     }, bg = "transparent") ## end of reactive landuse plot
 
     reactive_map <- reactive({
       subset_ahupuaa <- area_landuse_sum_dustin %>%
-        filter(county == input$data)
+        filter(mokupuni == input$data)
       return(subset_ahupuaa)
     })
 
     reactive_map2 <- reactive({
       subset_ahupuaa <- data_sf_clean_dustin %>%
-        filter(county == input$data) %>%
-        dplyr::select(c(moku, county, geometry))
+        filter(mokupuni == input$data) %>%
+        dplyr::select(c(moku, mokupuni, county, geometry))
 
       multi_layer_reactive_rs <- crop(multi_layer_rs_dustin, extent(subset_ahupuaa))
       multi_layer_reactive_df <- as.data.frame(multi_layer_reactive_rs, xy = TRUE)
@@ -130,7 +137,14 @@ function(input, output, session) {
       ggplot() +
         geom_sf(data = reactive_map(), aes(fill = resample)) +
         geom_sf(data = reactive_map(), fill = NA, color = "black", lwd =0.1) +
-        geom_tile(data = reactive_map2(), inherit.aes = FALSE, aes(x = x, y = y), color = "violet") +
+        scale_fill_manual(values = c("Agriculture" = "coral3",
+                                     "Urban or Built-Up" = "peachpuff2",
+                                     "Forest Land" = "darkgreen",
+                                     "Water" = "cyan2",
+                                     "Wetlands" = "cyan4",
+                                     "Rangeland" = "gold2",
+                                     "Barren" = "peachpuff4")) +
+        geom_tile(data = reactive_map2(), inherit.aes = TRUE, aes(x = x, y = y), fill = "hotpink", color = "hotpink") +
         labs(x = "Longitude", y = "Latitude", fill = "Landuse Coverage", color = "") +
         ggtitle(req(input$data)) +
         theme_bw() +
