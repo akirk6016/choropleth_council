@@ -14,6 +14,14 @@ library(leaflet)
 # Define server logic required to draw a histogram
 function(input, output, session) {
 
+    output$overview_image <- renderImage({
+
+      list(src = "www/hawaii_image.jpeg",
+           width = "75%",
+           height = 500)
+    }, deleteFile = F)
+
+
     model_select <- reactive({
       model_df <- max_ahu_model_join_select_df %>%
         dplyr::filter(model_type == input$model_type)
@@ -152,3 +160,51 @@ function(input, output, session) {
     })
 
 }
+
+
+
+
+## Abigail Server Work
+
+# datasetInput <- eventReactive(input$update, {
+#   switch(input$dataset,
+#          "Interview 1" = top_1,
+#          "Interview 2" = top_2,
+#          "Interview 3" = top_3,
+#          "Interview 4" = top_4,
+#          "Interview 5" = top_5,
+#          "Interview 6" = top_6,
+#          "Interview 7" = top_7,
+#          "Interview 8" = top_8,
+#          "Interview 9" = top_9,
+#          "Interview 10" = top_10,
+#          "Interview 11" = top_11,
+#          "Interview 12" = top_12,
+#          "Interview 13" = top_13,
+#          "Interview 14" = top_14,
+#          "Interview 15" = top_15,
+#          "Interview 16" = top_16)
+#
+# }, ignoreNULL = FALSE) ## end of dataset selection
+#
+#
+# output$unions_plot <-  renderPlot({
+#   ggplot(data = unions_nrc_counts, aes(x = n, y = sentiment, fill = sentiment)) +
+#     geom_col() +
+#     facet_wrap(~interview) +
+#     labs(x = "Wordcount", y = "Sentiment") +
+#     theme_bw() +
+#     scale_fill_manual(values =met.brewer("Benedictus", 10)) +
+#     guides(fill="none")
+#
+# }) ## end of static plot
+#
+# # Show the first "n" observations ----
+# # The use of isolate() is necessary because we don't want the table
+# # to update whenever input$obs changes (only when the user clicks
+# # the action button)
+#
+# output$view <- renderTable({
+#   head(datasetInput(), n = isolate(input$words))
+# })
+
