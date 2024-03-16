@@ -97,12 +97,12 @@ function(input, output, session) {
         labs(x = "Moku", y = "Area in Hectares",
              fill = "Land Cover Class") +
         scale_fill_manual(values = c("Agriculture" = "coral2",
-                                     "Urban or Built-Up" = "peachpuff2",
+                                     "Urban or Built-Up" = "peachpuff4",
                                      "Forest Land" = "darkgreen",
                                      "Water" = "cyan2",
                                      "Wetlands" = "cyan4",
                                      "Rangeland" = "gold2",
-                                     "Barren" = "peachpuff4")) +
+                                     "Barren" = "peachpuff2")) +
         theme(panel.grid.major = element_blank(),
               panel.grid.minor = element_blank()) +
         theme(panel.grid.minor = element_blank(),
@@ -146,12 +146,12 @@ function(input, output, session) {
         geom_sf(data = reactive_map(), aes(fill = resample)) +
         geom_sf(data = reactive_map(), fill = NA, color = "black", lwd =0.1) +
         scale_fill_manual(values = c("Agriculture" = "coral3",
-                                     "Urban or Built-Up" = "peachpuff2",
+                                     "Urban or Built-Up" = "peachpuff4",
                                      "Forest Land" = "darkgreen",
                                      "Water" = "cyan2",
                                      "Wetlands" = "cyan4",
                                      "Rangeland" = "gold2",
-                                     "Barren" = "peachpuff4")) +
+                                     "Barren" = "peachpuff2")) +
         geom_tile(data = reactive_map2(), inherit.aes = TRUE, aes(x = x, y = y), fill = "hotpink", color = "hotpink") +
         labs(x = "Longitude", y = "Latitude", fill = "Landuse Coverage", color = "") +
         ggtitle(req(input$data)) +
