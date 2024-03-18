@@ -25,7 +25,7 @@ We will also use spatial data of priority areasidentfied by residents to compare
 Additionally, we will use interview data retrieved ScholarSpace, a repository managed by the University of Hawaii at Manoa,
 to conducr a sentiment analysis on the interviewees experiences growing up on Pioneer Mill'),
 
-           imageOutput("overview_image")
+           imageOutput("overview_image"), align = 'center'
 
            ),
 
@@ -47,11 +47,11 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
                          column(
                            width = 12,
                            offset = 0,
-                           div(h5("Area (ha) of model ouput on each island", align = 'center')),
                            div(plotOutput("model_plot")), align = 'center'),
+                           div(p(style = "text-align: font-size = 13px",
+                                 strong("Area (ha) of model output on each mokupuni (island)"))),
                            div(p(style = "text-align: font-size = 12px",
-                                 "Area (ha) of model output on each mokupuni (island). Land
-                                 prioritization models that maximized only carbon sequestion are
+                                 "Land prioritization models that maximized only carbon sequestion are
                                  shown in shades of orange. A value of 1 indicates an area that
                                  the model identified as important for carbon sequestration, and a value
                                  of 0 indicates an area not identfied by the model as important
@@ -63,13 +63,14 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
                          column(
                            width = 12,
                            offset = 0,
-                           div(h5("Interactive map showing model results"), align = 'center'),
                            div(tmapOutput(outputId = "interactive_map")), align = 'center'),
+                           div(p(style = "text-align: font-size = 13px",
+                                 strong("Interactive map showing model results"))),
                            div(p(style = "text-align: font-size = 12px",
                                  "This interactive map shows the results of land prioritization models
                                  developed by Nākoa Farrant, a PhD candidate at the
                                  Bren School of Environemntal Science & Management. The color scheme
-                                 for each model outout aligns with the bar graph above, and
+                                 for each model output aligns with the bar graph above, and
                                  a shapefile of Ahupuaʻa's is included below the model results. "))),
 
                    )## end of main panel
