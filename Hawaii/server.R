@@ -159,52 +159,55 @@ function(input, output, session) {
         theme(plot.title = element_text(face = "bold", hjust = 0.5))
     })
 
-}
 
 
 
 
 ## Abigail Server Work
 
-# datasetInput <- eventReactive(input$update, {
-#   switch(input$dataset,
-#          "Interview 1" = top_1,
-#          "Interview 2" = top_2,
-#          "Interview 3" = top_3,
-#          "Interview 4" = top_4,
-#          "Interview 5" = top_5,
-#          "Interview 6" = top_6,
-#          "Interview 7" = top_7,
-#          "Interview 8" = top_8,
-#          "Interview 9" = top_9,
-#          "Interview 10" = top_10,
-#          "Interview 11" = top_11,
-#          "Interview 12" = top_12,
-#          "Interview 13" = top_13,
-#          "Interview 14" = top_14,
-#          "Interview 15" = top_15,
-#          "Interview 16" = top_16)
-#
-# }, ignoreNULL = FALSE) ## end of dataset selection
-#
-#
-# output$unions_plot <-  renderPlot({
-#   ggplot(data = unions_nrc_counts, aes(x = n, y = sentiment, fill = sentiment)) +
-#     geom_col() +
-#     facet_wrap(~interview) +
-#     labs(x = "Wordcount", y = "Sentiment") +
-#     theme_bw() +
-#     scale_fill_manual(values =met.brewer("Benedictus", 10)) +
-#     guides(fill="none")
-#
-# }) ## end of static plot
-#
-# # Show the first "n" observations ----
-# # The use of isolate() is necessary because we don't want the table
-# # to update whenever input$obs changes (only when the user clicks
-# # the action button)
-#
-# output$view <- renderTable({
-#   head(datasetInput(), n = isolate(input$words))
-# })
+datasetInput <- eventReactive(input$update, {
+  switch(input$dataset,
+         "1" = top_1,
+         "2" = top_2,
+         "3" = top_3,
+         "4" = top_4,
+         "5" = top_5,
+         "6" = top_6,
+         "7" = top_7,
+         "8" = top_8,
+         "9" = top_9,
+         "10" = top_10,
+         "11" = top_11,
+         "12" = top_12,
+         "13" = top_13,
+         "14" = top_14,
+         "15" = top_15,
+         "16" = top_16)
 
+}, ignoreNULL = FALSE) ## end of dataset selection
+
+
+output$unions_plot <-  renderPlot({
+  ggplot(data = unions_nrc_counts, aes(x = n, y = sentiment, fill = sentiment)) +
+    geom_col() +
+    facet_wrap(~interview) +
+    labs(x = "Wordcount", y = "Sentiment") +
+    theme_bw() +
+    scale_fill_manual(values =met.brewer("Benedictus", 10)) +
+    guides(fill="none") +
+    theme(
+          panel.background = element_blank(),
+          plot.background = element_blank(),
+          legend.background = element_blank())
+}, bg = "transparent") ## end of static plot
+
+# Show the first "n" observations ----
+# The use of isolate() is necessary because we don't want the table
+# to update whenever input$obs changes (only when the user clicks
+# the action button)
+
+output$view <- renderTable({
+  head(datasetInput(), n = isolate(input$words))
+})
+
+}
