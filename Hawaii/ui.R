@@ -190,10 +190,11 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
 #         The plantation ceased operations in 1999, and since then the smokestack has been saved as a historic landmark. The following sentiment analysis
 #         was conducted using interview data from individuals who grew up on or near the plantation.
 #
-#         Summary Data Citation:
-#         Interview Data Citation:
-#         Widget Source Citation
-#         NRC Lexicon Citation:'
+#
+#         Interview Data Citation: Pioneer Smokestack| Lahaina Restoration Foundation. (n.d.). Retrieved March 11, 2024, from https://www.lahainarestoration.org/smokestack.html
+#         Widget Source Citation: Mine Cetinkaya-Rundel; Professor at Duke University + Developer Educator at Posit PBC
+#         https://github.com/rstudio/shiny-examples/tree/main/007-widgets
+#         NRC Lexicon Citation: Saif M. Mohammad and Peter D. Turney. 2013. Crowdsourcing a Word-Emotion Association Lexicon. Computational Intelligence, 29(3), 436-465.'
 #               ),
 #
 #             # end of summary paragraph
@@ -222,12 +223,15 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
 #             mainPanel(
 #
 #          # Output: Header ----
-#            h4("Sentiment Analysis"),
+#            h4("Sentiment Analysis", style = "text-align: center",
+#               P("The following table shows the top words in the interview text The plot above the tables shows the sentiment analysis conducted.
+#                 Using the NRC Lexicon, the analysis classifies each word using the following sentiments:
+#                 anger, anticipation, disgust, fear, joy, negative, positive, sadness, surprise, and trust. The table shows the total sentiment counts for each chapter.")),
 #           tableOutput("unions_plot"),
 #
 #
 #       # Output: Header + table of distribution ----
-#        h4("Observations"),
+#        h4("Observations", style = "text-align: center"),
 #         tableOutput("view")
 #
 #               ) ## end of main panel
