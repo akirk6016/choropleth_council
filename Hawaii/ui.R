@@ -158,24 +158,20 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
 
              fluidRow(
                column(
-                 width = 7,
-                 offset = 3,
+                 width = 10,
+                 offset = 1,
               mainPanel(
-                "Land Cover in the Hawai'ian Islands",)
-              ), align = "center",
-                column(
-                width = 8,
-                offset = 2,
+                "Land Cover in the Hawai'ian Islands",),
+              p(""),
                 plotOutput(outputId = "landuse_plot"),
                 p("Land prioritization models are colored either pink or cyan to effectively distinguish them from the land
                 cover classes. If you would like to see just the land coverage, you may select \'Neither\' from
                   the \'Select Prioritization\' options to see just the land coverage on each island."),
                 plotOutput(outputId = "county_plot")
-                ),
+                )),
                 align = 'center',
                 style = 'width = 100%;'
-                ))
-              ),
+                )),
 
   tabPanel("Choropleths",
            p("Spatial distribution of food and carbon prioritization on the Hawai'ian Islands. The choropleths
