@@ -72,8 +72,8 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
                                  "This interactive map shows the results of the land prioritization models
                                  developed by Nākoa Farrant. The color scheme
                                  for each model output aligns with the bar graph above, and
-                                 a shapefile of Ahupuaʻa's is included below the model results. Users can click on
-                                 each Ahupua'a boundary to see its name, size, and assoociated Moku and Mokupuni."))),
+                                 a shapefile of Ahupuaʻa's are included below the model results. Users can click on
+                                 each Ahupua'a boundary to see its name, size, and associated Moku and Mokupuni."))),
 
                    )## end of main panel
                   ## end of main panel fluid row
@@ -178,6 +178,13 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
 
   tabPanel("Choropleths",
            fluidPage(
+             p(style = "text-align: font-size = 13px",
+               "Choropleth maps use differences in shading and coloring to indicate the average value of
+               certain properties or quantities within areas. Below, users can select different islands and
+               model prioritization status to see how land prioritized for food production and carbon storage
+               vary spatially within Ahupua'a boundaries across the Hawai'ian Islands. Darker shades of green and orange in the food and
+               carbon consideration choropleths indicate greater counts of land identified as high potential
+               for these respective prioritizations."),
              fluidRow(
                column(width = 6, selectInput("island", "Select Island", choices = unique(data_choropleths_dustin$mokupuni)), align = "center"),
                column(width = 6, selectInput("choropleth", "Select Prioritization", choices = c("Prioritized", "Not Prioritized")), align = "center")
@@ -190,8 +197,8 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
                  mainPanel(
                    "Carbon and Food Prioritization Distributions within Hawai'ian Islands"
                  ),
-                 plotOutput(outputId = "choropleth_food"),
-                 plotOutput(outputId = "choropleth_carbon")
+                 splitLayout(cellWidths = c("50%", "50%"), plotOutput(outputId = "choropleth_food"),
+                 plotOutput(outputId = "choropleth_carbon"))
                ),
 
              )
