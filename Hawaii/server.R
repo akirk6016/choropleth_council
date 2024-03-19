@@ -58,7 +58,7 @@ function(input, output, session) {
       tmap_options(check.and.fix = TRUE)
 
       # define the layers
-      tm_shape(max_ahupuaa_raw_sf, name = "Ahupua'a") +
+      tm_shape(max_ahupuaa_raw_sf, name = "Ahupua'a boundaries") +
         tm_polygons(alpha = 0.2, border.col = "black",
                     border.alpha = 0.6, lwd = 0.2) +
         tm_shape(max_carbon_sf, name = "Prioritize carbon storage") +
