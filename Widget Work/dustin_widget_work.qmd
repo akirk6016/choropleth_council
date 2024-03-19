@@ -151,8 +151,20 @@ food_sf <- food_rs %>%
 
 
 food_ones <- food_sf %>% 
-  filter(Food == 1) %>% 
-  summarise(n = n())
+  filter(Food == "1") 
+
+## Turning carbon raster into a dataframe for plotting purposes
+carbon_sf <- carbon_rs %>% 
+  as.points(., values=TRUE, na.rm=TRUE, na.all=FALSE) %>% 
+  st_as_sf(., xy = TRUE) %>% 
+  na.omit() %>% 
+  mutate(Carbon = ifelse(Carbon > 0, 1, 0),
+    Carbon = as.character(Carbon))
+
+
+carbon_ones <- carbon_sf %>% 
+  filter(Carbon == "1") 
+  # summarise(n = n())
 
 #### CARBON .TIF FILE ####
 
@@ -167,62 +179,65 @@ carbon_rs <- rast(carbon_file)
 ## Turning carbon raster into a dataframe for plotting purposes
 carbon_sf <- carbon_rs %>% 
   as.points(., values=TRUE, na.rm=TRUE, na.all=FALSE) %>% 
-  st_as_sf( xy = TRUE) %>% 
+  st_as_sf(., xy = TRUE) %>% 
   na.omit() %>% 
   mutate(Carbon = ifelse(Carbon > 0, 1, 0),
     Carbon = as.character(Carbon))
+
+
 carbon_ones <- carbon_sf %>% 
-  filter(Carbon == 1) %>% 
-  summarise(n = n())
+  filter(Carbon == "1") 
+  # summarise(n = n())
+
 ############################## MULTI-LAYER .TIF FILE ##########################
 
-## Loading both carbon and food files as a list
-files_list <- here::here(c("data/food_priority1_100m.tif", "data/carbon_priority2_100m.tif"))
-
-## Rasterizing them --> Same rows and columns, but two layers 
-(
-  multi_layer_rs <- rast(files_list)
-)
-multi_layer_rs_dustin <- extend(multi_layer_rs, data_sf)
-## Converting the raster to polygons 
-(
-multi_layer_polygons <- as.polygons(multi_layer_rs)
-)
-## Converting polygons to sf 
-multi_layer_sf <- st_as_sf(multi_layer_polygons)
-
-
-(
-data_resample <- terra::resample(data_rast, multi_layer_rs, method='bilinear')
-)
-
-multi_layer_df <- as.data.frame(multi_layer_rs, xy = TRUE)
-
-multi_layer_df_longer <- multi_layer_df %>% 
-  mutate(Food = as.factor(Food),
-         Carbon = as.factor(Carbon)) %>% 
-  pivot_longer(cols = c("Food", "Carbon"),
-               names_to = "priority",
-               values_to = "foodcarbon")
-
-multi_layer_df_food <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
-  filter(Food == 1 & Carbon == 0)
-
-multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
-  filter(Food == 0 & Carbon == 1) 
-
-## Trying to convert it to points 
-multi_layer_ppp_dustin <- as.points(multi_layer_rs, values=TRUE, na.rm=TRUE, na.all=FALSE) 
-
-multi_layer_ppp_sf_dustin <- st_as_sf(multi_layer_ppp_dustin, xy = TRUE) %>% 
-  mutate(Carbon = ifelse(Carbon > 0, 1, 0),
-         Food = ifelse(Food > 0, 1, 0)) %>% 
-  pivot_longer(cols = c("Food", "Carbon"),
-               names_to = "priority",
-               values_to = "foodcarbon")
-
-## Send this down after loading the multi_layers_sr 
-values <- raster::extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
+# ## Loading both carbon and food files as a list
+# files_list <- here::here(c("data/food_priority1_100m.tif", "data/carbon_priority2_100m.tif"))
+# 
+# ## Rasterizing them --> Same rows and columns, but two layers 
+# (
+#   multi_layer_rs <- rast(files_list)
+# )
+# multi_layer_rs_dustin <- extend(multi_layer_rs, data_sf)
+# ## Converting the raster to polygons 
+# (
+# multi_layer_polygons <- as.polygons(multi_layer_rs)
+# )
+# ## Converting polygons to sf 
+# multi_layer_sf <- st_as_sf(multi_layer_polygons)
+# 
+# 
+# (
+# data_resample <- terra::resample(data_rast, multi_layer_rs, method='bilinear')
+# )
+# 
+# multi_layer_df <- as.data.frame(multi_layer_rs, xy = TRUE)
+# 
+# multi_layer_df_longer <- multi_layer_df %>% 
+#   mutate(Food = as.factor(Food),
+#          Carbon = as.factor(Carbon)) %>% 
+#   pivot_longer(cols = c("Food", "Carbon"),
+#                names_to = "priority",
+#                values_to = "foodcarbon")
+# 
+# multi_layer_df_food <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+#   filter(Food == 1 & Carbon == 0)
+# 
+# multi_layer_df_carbon <- as.data.frame(multi_layer_rs, xy = TRUE) %>%
+#   filter(Food == 0 & Carbon == 1) 
+# 
+# ## Trying to convert it to points 
+# multi_layer_ppp_dustin <- as.points(multi_layer_rs, values=TRUE, na.rm=TRUE, na.all=FALSE) 
+# 
+# multi_layer_ppp_sf_dustin <- st_as_sf(multi_layer_ppp_dustin, xy = TRUE) %>% 
+#   mutate(Carbon = ifelse(Carbon > 0, 1, 0),
+#          Food = ifelse(Food > 0, 1, 0)) %>% 
+#   pivot_longer(cols = c("Food", "Carbon"),
+#                names_to = "priority",
+#                values_to = "foodcarbon")
+# 
+# ## Send this down after loading the multi_layers_sr 
+# values <- raster::extract(multi_layer_rs, data_vec, fun = max, na.rm = TRUE)
 
 ########################### LAND USE COVER DATA ###############################
 
@@ -278,7 +293,7 @@ ahu_intersect_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_int
 
 intersected_polygons <- sf::st_intersection(data_sf_clean, landuse_sf)
 
-intersected_priority_ <- sf::st_intersection(multi_layer_ppp_sf_dustin, intersected_polygons)
+# intersected_priority_ <- sf::st_intersection(multi_layer_ppp_sf_dustin, intersected_polygons)
 
 intersected_carbon <- sf::st_intersection(data_sf_clean, ahu_intersect_carbon_sf)
 
@@ -455,21 +470,43 @@ ggplot() +
 ```{r}
 ## Doing it all 
 vect(data_sf_clean)
-multi_sf <- data_sf_clean %>% 
-  st_join(multi_layer_ppp_sf_dustin)
+# Food
+food_choropleth <- data_sf_clean %>% 
+  st_join(food_ones) %>% 
+  mutate(Food = as.integer(Food))
 
-priority_counts_sf_all <- multi_sf %>% 
-  group_by(priority, ahupuaa) %>% 
-  summarize(n_ones = sum(!is.na(foodcarbon)))
+priority_counts_food <- food_choropleth %>% 
+  group_by(moku, mokupuni) %>% 
+  summarize(n_ones = sum(!is.na(Food)))
+# Carbon
+carbon_choropleth <- data_sf_clean %>% 
+  st_join(carbon_ones) %>% 
+  mutate(Carbon = as.integer(Carbon))
 
-prior_split <- split(priority_counts_sf_all, ~priority, drop = FALSE)
-  
+priority_counts_carbon <- carbon_choropleth %>% 
+  group_by(ahupuaa, moku, mokupuni) %>% 
+  summarize(n_ones = sum(!is.na(Carbon)))
 
-?split
-ggplot(data = priority_counts_sf_all) + 
-  geom_sf(aes(group_by = priority, fill = n_ones), color = "grey90", size = 0.1) + 
+p_carbon_oahu <- priority_counts_carbon %>% 
+  filter(mokupuni == "O'ahu")
+p_food_oahu <- priority_counts_food %>% 
+  filter(mokupuni == "O'ahu")
+
+ggplot(data = p_food_oahu) + 
+  geom_sf(aes(group_by = moku, fill = n_ones), color = "grey90", size = 0.1) + 
   scale_fill_gradientn(colors = c("lightgray","lightgreen", "green", "forestgreen", "darkgreen")) + 
+  labs(title = 'Food Choropleth') +
   theme_minimal()
+
+ggplot(data = p_carbon_oahu) + 
+  geom_sf(aes(group_by = ahupuaa, fill = n_ones), color = "grey90", size = 0.1) + 
+  scale_fill_gradientn(colors = c("lightgray","orange1", "orange2", "orange3", "orange4")) + 
+  labs(title = 'Carbon Choropleth') +
+  theme_minimal() 
+
+```
+
+```{r}
 
 ## Hawaii
 # Filtering data 

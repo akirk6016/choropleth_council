@@ -167,6 +167,31 @@ food_rs_dustin <- extend(food_rs_dustin_init, data_sf_clean_dustin)
 ## Tells us that the raster is projected in WGS 84
 terra::crs(food_rs_dustin)
 
+## Turning food raster into a dataframe for choropleth
+food_sf_dustin <- food_rs_dustin %>%
+  as.points(., values=TRUE, na.rm=TRUE, na.all=FALSE) %>%
+  st_as_sf( xy = TRUE) %>%
+  na.omit() %>%
+  mutate(Food = ifelse(Food > 0, 1, 0),
+         Food = as.character(Food))
+
+
+food_ones_dustin <- food_sf_dustin %>%
+  filter(Food == "1")
+
+food_choropleth_dustin <- data_sf_clean_dustin %>%
+  st_join(food_ones_dustin) %>%
+  mutate(Food = as.integer(Food))
+
+priority_counts_food_dustin <- food_choropleth_dustin %>%
+  group_by(ahupuaa, moku, mokupuni) %>%
+  summarize(n_ones = sum(!is.na(Food)))
+
+
+data_choropleths_dustin <- data_sf_clean_dustin %>%
+  filter(!mokupuni == "Kaho'olawe") %>%
+  filter(!mokupuni == "Ni'ihau")
+
 #### CARBON .TIF FILE ####
 
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
@@ -178,6 +203,25 @@ carbon_rs_dustin_init <- rast(carbon_file_dustin)
 
 carbon_rs_dustin <- extend(carbon_rs_dustin_init, data_sf_clean_dustin)
 
+## Turning carbon raster into a dataframe for choropleth
+carbon_sf_dustin <- carbon_rs_dustin %>%
+  as.points(., values=TRUE, na.rm=TRUE, na.all=FALSE) %>%
+  st_as_sf(., xy = TRUE) %>%
+  na.omit() %>%
+  mutate(Carbon = ifelse(Carbon > 0, 1, 0),
+         Carbon = as.character(Carbon))
+
+
+carbon_ones_dustin <- carbon_sf_dustin %>%
+  filter(Carbon == "1")
+
+carbon_choropleth_dustin <- data_sf_clean_dustin %>%
+  st_join(carbon_ones_dustin) %>%
+  mutate(Carbon = as.integer(Carbon))
+
+priority_counts_carbon_dustin <- carbon_choropleth_dustin %>%
+  group_by(ahupuaa, moku, mokupuni) %>%
+  summarize(n_ones = sum(!is.na(Carbon)))
 
 ## Turning carbon raster into a dataframe for plotting purposes
 # carbon_df_dustin <- as.data.frame(carbon_rs_dustin, xy = TRUE) %>%

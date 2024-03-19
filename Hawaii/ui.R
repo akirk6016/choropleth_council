@@ -176,15 +176,26 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
                 ))
               ),
 
-  tabPanel("Group widget",
+  tabPanel("Choropleths",
            fluidPage(
-             div(
-               selectInput("his input here",
-                           "Dustin's Widget",
-                           choices = c("Survey Sentiment Analysis",
-                                       "Keywords for Cultural Sites"))
+             fluidRow(
+               column(width = 6, selectInput("island", "Select Island", choices = unique(data_choropleths_dustin$mokupuni)), align = "center"),
+               column(width = 6, selectInput("choropleth", "Select Prioritization", choices = c("Prioritized", "Not Prioritized")), align = "center")
+
+             ),
+             fluidRow(
+               column(
+                 width = 7,
+                 offset = 2,
+                 mainPanel(
+                   "Carbon and Food Prioritization Distributions within Hawai'ian Islands"
+                 ),
+                 plotOutput(outputId = "choropleth_food"),
+                 plotOutput(outputId = "choropleth_carbon")
+               ),
+
              )
-           ), collapsible = TRUE),
+           )),
 
 tabPanel("Pioneer Mill Interview Text Analysis",
         p('Pioneer Mill, established in 1860, was the first sugar plantation in Hawaii to grow sugarcane commercially. In its peak in the 1960s,

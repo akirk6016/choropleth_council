@@ -192,6 +192,70 @@ function(input, output, session) {
         theme(plot.title = element_text(face = "bold", hjust = 0.5))
     })
 
+    ## Choropleths
+
+    choropleth_food <- reactive({
+      choropleth_select <- data_choropleths_dustin %>%
+        filter(mokupuni == input$island)
+
+      if (input$choropleth == "Not Prioritized") {
+        priority_selection_food <- food_sf_dustin %>%
+          filter(Food == "0")
+      }
+      if (input$choropleth == "Prioritized") {
+        priority_selection_food <- food_sf_dustin %>%
+          filter(Food == "1")
+      }
+
+      food_choropleth_data <- choropleth_select %>%
+        st_join(priority_selection_food) %>%
+        group_by(ahupuaa, moku, mokupuni) %>%
+        summarize(n_ones = sum(!is.na(Food)))
+
+      return(food_choropleth_data)
+    })
+
+    choropleth_carbon <- reactive({
+      choropleth_select <- data_choropleths_dustin %>%
+        filter(mokupuni == input$island)
+
+      if (input$choropleth == "Not Prioritized") {
+        priority_selection_carbon <- carbon_sf_dustin %>%
+          filter(Carbon == "0")
+      }
+      if (input$choropleth == "Prioritized") {
+        priority_selection_carbon <- carbon_sf_dustin %>%
+          filter(Carbon == "1")
+      }
+
+      carbon_choropleth_data <- choropleth_select %>%
+        st_join(priority_selection_carbon) %>%
+        group_by(ahupuaa, moku, mokupuni) %>%
+        summarize(n_ones = sum(!is.na(Carbon)))
+
+      return(carbon_choropleth_data)
+    })
+
+    output$choropleth_carbon <- renderPlot({
+      ggplot() +
+        geom_sf(data = choropleth_carbon(), aes(fill = n_ones)) +
+        scale_fill_gradientn(colors = c("lightgray","orange1", "orange2", "orange3", "orange4")) +
+        theme_minimal() +
+        ggtitle("Carbon Consideration") +
+        labs(fill = "Observation Count") +
+        theme(plot.title = element_text(face = "bold", hjust = 0.5))
+    })
+
+    output$choropleth_food <- renderPlot({
+      ggplot() +
+        geom_sf(data = choropleth_food(), aes(fill = n_ones)) +
+        scale_fill_gradientn(colors = c("lightgray","lightgreen", "green", "forestgreen", "darkgreen")) +
+        theme_minimal() +
+        ggtitle("Food Consideration") +
+        labs(fill = "Observation Count") +
+        theme(plot.title = element_text(face = "bold", hjust = 0.5))
+    })
+
 
 
 
