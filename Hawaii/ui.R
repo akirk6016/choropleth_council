@@ -193,12 +193,11 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
              fluidRow(
                column(
                  width = 7,
-                 offset = 2,
                  mainPanel(
-                   "Carbon and Food Prioritization Distributions within Hawai'ian Islands"
-                 ),
-                 splitLayout(cellWidths = c("50%", "50%"), plotOutput(outputId = "choropleth_food"),
-                 plotOutput(outputId = "choropleth_carbon"))
+                   p(strong("Carbon and Food Prioritization Distributions within Hawai'ian Islands")
+                 )),
+                 splitLayout(cellWidths = c("80%", "80%"), plotOutput(outputId = "choropleth_food"),
+                 plotOutput(outputId = "choropleth_carbon"), align = 'center')
                ),
 
              )
