@@ -29,6 +29,7 @@ library(tmap)
 library(spatstat)
 library(patchwork)
 library(stringr)
+library(ggnewscale)
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
@@ -147,6 +148,7 @@ food_sf <- food_rs %>%
   na.omit() %>% 
   mutate(Food = ifelse(Food > 0, 1, 0),
     Food = as.character(Food))
+
 
 food_ones <- food_sf %>% 
   filter(Food == 1) %>% 
@@ -270,6 +272,10 @@ landuse_vec <- vect(landuse_sf)
 
 ## Intersecting the ahupuaa and landuse dataframe to obtain total area (ha)
 
+ahu_intersect_carbon_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_carbon_intersect.shp"))
+
+ahu_intersect_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_intersect.shp"))
+
 intersected_polygons <- sf::st_intersection(data_sf_clean, landuse_sf)
 
 intersected_priority_ <- sf::st_intersection(multi_layer_ppp_sf_dustin, intersected_polygons)
@@ -280,13 +286,53 @@ intersected_carbon <- sf::st_intersection(data_sf_clean, ahu_intersect_carbon_sf
 area_landuse_sum <- intersected_polygons %>% 
   group_by( moku, mokupuni, county, resample) %>% 
   summarize(landuse_ha = sum(st_areasha, na.rm = TRUE)*(1^-4)) %>% 
-  ungroup()
+  ungroup() %>% 
+  filter(county == "O'ahu")
 
-############################### MAX'S INTERSECTED DFS ##########################
-ahu_intersect_carbon_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_carbon_intersect.shp"))
 
-ahu_intersect_food_sf <- read_sf(here("data/ahu_model_intersect/ahupuaa_food_intersect.shp"))
 
+food_df <- as.data.frame(food_rs, xy = TRUE) %>% 
+  mutate(Food = ifelse(Food > 0, 1, 0)) %>% 
+  mutate(Food = as.character(Food))
+
+carbon_df <- as.data.frame(carbon_rs, xy = TRUE) %>% 
+  mutate(Carbon = ifelse(Carbon > 0, 1, 0)) %>% 
+  mutate(Carbon = as.character(Carbon))
+# 
+# df_list <- list("Carbon" = carbon_rs, "Food" = food_rs)
+# 
+# 'Food' <- food_rs
+# 
+# list <- list(Food, carbon) 
+# 
+# 
+# food_reactive_rs <- crop(df_list[[2]], extent(area_landuse_sum))
+# 
+# food_reactive_df <- as.data.frame(food_reactive_rs, xy = TRUE) %>% 
+#   mutate(Food = ifelse(Food > 0, 1, 0)) %>% 
+#   mutate(Food = as.character(Food))
+
+
+```
+
+```{r}
+ggplot() +
+        geom_sf(data = area_landuse_sum, aes(fill = resample)) +
+        # geom_sf(data = area_landuse_sum, fill = NA, color = "black", lwd =0.05) +
+        scale_fill_manual(values = c("Agriculture" = "coral4",
+                                     "Urban or Built-Up" = "peachpuff4",
+                                     "Forest Land" = "darkgreen",
+                                     "Water" = "lightblue",
+                                     "Wetlands" = "cyan4",
+                                     "Rangeland" = "gold2",
+                                     "Barren" = "peachpuff2"), name = "Landuse Coverage") +
+  new_scale_fill() + 
+        geom_tile(data = food_reactive_df, inherit.aes = TRUE, aes(x = x, y = y, fill = Food)) +
+  scale_fill_manual(values = c("1" = "cyan1",
+                               "0" = "maroon2"), name = "Food Prioritization", na.value = "transparent") +
+        labs(x = "Longitude", y = "Latitude", fill = "Landuse Coverage", color = "") +
+        theme_bw() +
+        theme(plot.title = element_text(face = "bold", hjust = 0.5))
 
 ```
 

@@ -96,10 +96,10 @@ function(input, output, session) {
                  aes(x = moku, y = landuse_ha, fill = resample), color = "black") +
         labs(x = "Moku", y = "Area in Hectares",
              fill = "Land Cover Class") +
-        scale_fill_manual(values = c("Agriculture" = "coral2",
+        scale_fill_manual(values = c("Agriculture" = "coral4",
                                      "Urban or Built-Up" = "peachpuff4",
                                      "Forest Land" = "darkgreen",
-                                     "Water" = "cyan2",
+                                     "Water" = "lightblue",
                                      "Wetlands" = "cyan4",
                                      "Rangeland" = "gold2",
                                      "Barren" = "peachpuff2")) +
@@ -111,9 +111,11 @@ function(input, output, session) {
               plot.background = element_blank(),
               legend.background = element_blank(),
               axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-        ggtitle('Total Hectares of Landuse Coverage in:') +
+        ggtitle('Total Hectares of Landuse Coverage on') +
         theme(plot.title = element_text(face = "bold", hjust = 0.5)) +
-        facet_wrap(~mokupuni, scales = "free")
+        facet_grid(~mokupuni, scales = "free") +
+        theme(strip.background = element_rect(fill = "transparent"),
+              strip.text = element_text(face = "bold", size = 13, colour = "black"))
     }, bg = "transparent") ## end of reactive landuse plot
 
     reactive_map <- reactive({
@@ -127,15 +129,36 @@ function(input, output, session) {
         filter(mokupuni == input$data) %>%
         dplyr::select(c(moku, mokupuni, county, geometry))
 
+      carbon_rs_dustin <- extend(carbon_rs_dustin_init, data_sf_clean_dustin)
+      food_rs_dustin <- extend(food_rs_dustin_init, data_sf_clean_dustin)
 
-      multi_layer_reactive_rs <- crop(multi_layer_rs_dustin, extent(subset_ahupuaa))
+      if (input$raster == "Food") {
+        raster_choice <- crop(food_rs_dustin, extent(subset_ahupuaa)) %>%
+          as.data.frame( xy = TRUE) %>%
+          mutate(Food = ifelse(Food > 0, 1, 0)) %>%
+          mutate(Food = as.character(Food)) %>%
+          rename(priority = Food)
+      }
+      if (input$raster == "Carbon") {
+        raster_choice <- crop(carbon_rs_dustin, extent(subset_ahupuaa)) %>%
+          as.data.frame( xy = TRUE) %>%
+          mutate(Carbon = ifelse(Carbon > 0, 1, 0)) %>%
+          mutate(Carbon = as.character(Carbon)) %>%
+          rename(priority = Carbon)
+      }
+      if (input$raster == "Neither") {
+        raster_choice <- crop(carbon_rs_dustin, extent(subset_ahupuaa)) %>%
+          as.data.frame( xy = TRUE) %>%
+          mutate(Carbon = ifelse(Carbon > 0, 1, 0)) %>%
+          mutate(Carbon = case_when(
+            Carbon == '0' ~ "NA",
+            Carbon =='1' ~ "NA"
+          )) %>%
+          mutate(Carbon = as.character(Carbon)) %>%
+          rename(priority = Carbon)
+      }
 
-      multi_layer_reactive_df <- as.data.frame(multi_layer_reactive_rs, xy = TRUE)
-
-      multi_layer_raster_plot <- multi_layer_reactive_df %>%
-        dplyr::select(input$raster)
-
-      return(multi_layer_raster_plot)
+      return(raster_choice)
     })
 
     # reactive_map3 <- reactive({
@@ -150,17 +173,22 @@ function(input, output, session) {
       ggplot() +
         geom_sf(data = reactive_map(), aes(fill = resample)) +
         geom_sf(data = reactive_map(), fill = NA, color = "black", lwd =0.1) +
-        scale_fill_manual(values = c("Agriculture" = "coral3",
+        scale_fill_manual(values = c("Agriculture" = "coral4",
                                      "Urban or Built-Up" = "peachpuff4",
                                      "Forest Land" = "darkgreen",
-                                     "Water" = "cyan2",
+                                     "Water" = "lightblue",
                                      "Wetlands" = "cyan4",
                                      "Rangeland" = "gold2",
-                                     "Barren" = "peachpuff2")) +
-        geom_tile(data = reactive_map2(), inherit.aes = TRUE, aes(x = x, y = y), fill = "hotpink", color = "hotpink") +
-        labs(x = "Longitude", y = "Latitude", fill = "Landuse Coverage", color = "") +
-        ggtitle(req(input$data)) +
+                                     "Barren" = "peachpuff2"), name = "Land Cover Class") +
+        new_scale_fill() +
+        geom_tile(data = reactive_map2(), inherit.aes = TRUE, aes(x = x, y = y, fill = priority, color = priority)) +
+        scale_fill_manual(values = c("1" = "cyan1",
+                                     "0" = "maroon2", "NA" = "transparent"), name = "Prioritization") +
+        scale_color_manual(values = c("1" = "cyan1",
+                                     "0" = "maroon2", "NA" = "transparent"), name = "Prioritization") +
+        labs(x = "Longitude", y = "Latitude", color = "") +
         theme_bw() +
+        ggtitle(req(input$data)) +
         theme(plot.title = element_text(face = "bold", hjust = 0.5))
     })
 

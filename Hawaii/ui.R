@@ -143,36 +143,32 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
   #            )),
   # ), ## end of tab panel
 
+  # My goal is to make a fluid page with one row on the top with two selectInputs and two rows on the bottom with one plot in each of the two bottom rows
+
   tabPanel("Land Use Coverage",
+           p("Visualize land coverage on the Hawai'ian Islands as it compares to the land prioritization models.
+             Total hectares of land coverage are divided by moku on each island to provide a more digestible
+             visualization for different subsets of each island."),
            fluidPage(
              fluidRow(
-               column(
-                 width = 4,
-                 offset = 2,
-               selectInput("data",
-                           "Choose Island",
-                           choices = unique(data_sf_clean_dustin$mokupuni)),
-               align = "center"
-               ),
-               column(
-                 width = 4,
-                 offset = 6,
-                 selectInput("raster",
-                             "Food or Carbon",
-                             choices = "Food", "Carbon"),
-               )
+               column(width = 6, selectInput("data", "Select Island", choices = unique(data_sf_clean_dustin$mokupuni)), align = "center"),
+               column(width = 6, selectInput("raster", "Select Prioritization", choices = c("Food", "Carbon", "Neither")), align = "center")
 
-             ),
+               ),
+
              fluidRow(
                column(
-                 width = 6,
-                 offset = 3,
+                 width = 7,
+                 offset = 2,
               mainPanel(
-                "Land Use Coverage in the Hawai'ian Islands",)),
+                "Land Coverage in the Hawai'ian Islands",)),
                 column(
                 width = 8,
                 offset = 2,
                 plotOutput(outputId = "landuse_plot"),
+                p("Land prioritization models are colored either pink or cyan to effectively distinguish them from the land
+                cover classes. If you would like to see just the land coverage, you may select \'Neither\' from
+                  the \'Select Prioritization\' options to see just the land coverage on each island."),
                 plotOutput(outputId = "county_plot")
                 ),
                 align = 'center',

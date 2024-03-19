@@ -19,6 +19,9 @@ library(ggwordcloud)
 library(MetBrewer)
 library(textdata)
 library(ggExtra)
+library(ggnewscale)
+library(ggh4x)
+
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
@@ -110,7 +113,7 @@ data_sf_dustin <- st_as_sf(data_dustin) # --> EPSG 3750
 )
 ## Checking coordinate reference system
 st_crs(data_sf_dustin)
-
+levels <- c("Hawai'i", 'Maui', 'Kaho\'olawe', 'Lāna\'i', 'Moloka\'i', 'O\'ahu', 'Kaua\'i', "Ni\'ihau")
 ## Converting the wack apostrophies and other characters to ones R can recognize
 data_sf_clean_dustin <- data_sf_dustin %>%
   mutate(moku = str_replace_all(moku, pattern = "ʻ", replacement = "'"),
@@ -141,47 +144,28 @@ data_sf_clean_dustin <- data_sf_dustin %>%
     mokupuni == "Hawai'i" ~ "Hawai'i",
     mokupuni == "O'ahu" ~ "Honolulu County"
   )) %>%
+  filter(!mokupuni == "Molokini") %>%
+  mutate(mokupuni = factor(mokupuni, levels = levels)) %>%
+  arrange(mokupuni) %>%
   janitor::clean_names()
-
-## Rasterizing data_sf_clean (just in case )
-(
-  data_rast_dustin <- rast(data_sf_clean_dustin)
-)
-
-## Vectorizing data_sf_clean
-data_vec_dustin <- vect(data_sf_clean_dustin)
-
-# Filtering data to just hawaii (checking)
-data_vec_hawaii_dustin <- data_sf_clean_dustin %>% filter( mokupuni == "Hawai'i")
-# Vectorizing it
-vect(data_vec_hawaii_dustin)
-
 
 #### FOOD .TIF FILE #####
 
 ## Loads it as a value and then rasterizing it makes it a SpatRaster
 food_file_dustin <- here::here("data", "food_priority1_100m.tif")
 
-## Loads it directly as a RasterStack object
-# (
-# food_rs <- stack(here::here("data", "food_priority1_100m.tif"))
-# )
-
 ## Checking CRS
 # terra::crs(food_rs)
 
 ## Rasterizing food_file --> Turns to SpatRaster
-(
-  food_rast_dustin <- rast(food_file_dustin)
-)
+
+food_rs_dustin_init <- rast(food_file_dustin)
+
+food_rs_dustin <- extend(food_rs_dustin_init, data_sf_clean_dustin)
+
 
 ## Tells us that the raster is projected in WGS 84
-terra::crs(food_rast_dustin)
-
-## Turning food raster into a dataframe for plotting purposes
-food_df_dustin <- as.data.frame(food_rast_dustin, xy = TRUE) %>%
-  na.omit() %>%
-  mutate(Food = as.character(Food))
+terra::crs(food_rs_dustin)
 
 #### CARBON .TIF FILE ####
 
@@ -189,57 +173,59 @@ food_df_dustin <- as.data.frame(food_rast_dustin, xy = TRUE) %>%
 carbon_file_dustin <- here("data", "carbon_priority2_100m.tif")
 
 ## Rasterizing carbon_file --> Turns to SpatRaster
-(
-  carbon_rs_dustin <- rast(carbon_file_dustin)
-)
+
+carbon_rs_dustin_init <- rast(carbon_file_dustin)
+
+carbon_rs_dustin <- extend(carbon_rs_dustin_init, data_sf_clean_dustin)
+
 
 ## Turning carbon raster into a dataframe for plotting purposes
-carbon_df_dustin <- as.data.frame(carbon_rs_dustin, xy = TRUE) %>%
-  na.omit() %>%
-  mutate(Carbon = as.character(Carbon))
+# carbon_df_dustin <- as.data.frame(carbon_rs_dustin, xy = TRUE) %>%
+#   na.omit() %>%
+#   mutate(Carbon = as.character(Carbon))
 
 ############################## MULTI-LAYER .TIF FILE ##########################
 
 ## Loading both carbon and food files as a list
-files_list_dustin <- here::here(c("data/food_priority1_100m.tif", "data/carbon_priority2_100m.tif"))
-
-## Rasterizing them --> Same rows and columns, but two layers
-
-(
-  multi_layer_rs_dustin <- rast(files_list_dustin)
-)
-# Take the multi_layer_rs_dustin file and increase its bounding box to that of data_sf_clean_dustin.
-multi_layer_rs_dustin <- extend(multi_layer_rs_dustin, data_sf_dustin)
-## Converting the raster to polygons
-(
-  multi_layer_polygons_dustin <- as.polygons(multi_layer_rs_dustin)
-)
-## Converting polygons to sf
-multi_layer_sf <- st_as_sf(multi_layer_polygons_dustin)
-
-
-(
-  data_resample_dustin <- terra::resample(data_rast_dustin, multi_layer_rs_dustin, method='bilinear')
-)
-
-multi_layer_df_dustin <- as.data.frame(multi_layer_rs_dustin, xy = TRUE)
-
-
-multi_layer_df_longer_dustin <- multi_layer_df_dustin %>%
-  mutate(Food = as.factor(Food),
-         Carbon = as.factor(Carbon)) %>%
-  pivot_longer(cols = c("Food", "Carbon"),
-               names_to = "priority",
-               values_to = "foodcarbon")
-
-multi_layer_df_food_dustin <- as.data.frame(multi_layer_rs_dustin, xy = TRUE) %>%
-  filter(Food == 1 & Carbon == 0)
-
-multi_layer_df_carbon_dustin <- as.data.frame(multi_layer_rs_dustin, xy = TRUE) %>%
-  filter(Food == 0 & Carbon == 1)
+# files_list_dustin <- here::here(c("data/food_priority1_100m.tif", "data/carbon_priority2_100m.tif"))
+#
+# ## Rasterizing them --> Same rows and columns, but two layers
+#
+# (
+#   multi_layer_rs_dustin <- rast(files_list_dustin)
+# )
+# # Take the multi_layer_rs_dustin file and increase its bounding box to that of data_sf_clean_dustin.
+# multi_layer_rs_dustin <- extend(multi_layer_rs_dustin, data_sf_dustin)
+# ## Converting the raster to polygons
+# (
+#   multi_layer_polygons_dustin <- as.polygons(multi_layer_rs_dustin)
+# )
+# ## Converting polygons to sf
+# multi_layer_sf <- st_as_sf(multi_layer_polygons_dustin)
+#
+#
+# (
+#   data_resample_dustin <- terra::resample(data_rast_dustin, multi_layer_rs_dustin, method='bilinear')
+# )
+#
+# multi_layer_df_dustin <- as.data.frame(multi_layer_rs_dustin, xy = TRUE)
+#
+#
+# multi_layer_df_longer_dustin <- multi_layer_df_dustin %>%
+#   mutate(Food = as.factor(Food),
+#          Carbon = as.factor(Carbon)) %>%
+#   pivot_longer(cols = c("Food", "Carbon"),
+#                names_to = "priority",
+#                values_to = "foodcarbon")
+#
+# multi_layer_df_food_dustin <- as.data.frame(multi_layer_rs_dustin, xy = TRUE) %>%
+#   filter(Food == 1 & Carbon == 0)
+#
+# multi_layer_df_carbon_dustin <- as.data.frame(multi_layer_rs_dustin, xy = TRUE) %>%
+#   filter(Food == 0 & Carbon == 1)
 
 ## Send this down after loading the multi_layers_sr
-values <- raster::extract(multi_layer_rs_dustin, data_vec_dustin, fun = max, na.rm = TRUE)
+# values <- raster::extract(multi_layer_rs_dustin, data_vec_dustin, fun = max, na.rm = TRUE)
 
 ########################### LAND USE COVER DATA ###############################
 
@@ -293,9 +279,15 @@ intersected_polygons_dustin <- sf::st_intersection(data_sf_clean_dustin, landuse
 
 ## Summing landuse coverage per ahupua'a
 area_landuse_sum_dustin <- intersected_polygons_dustin %>%
+  filter(!mokupuni == "Molokini") %>%
   group_by( moku, mokupuni, county, resample) %>%
   summarize(landuse_ha = sum(st_areasha, na.rm = TRUE)*(1^-4)) %>%
   ungroup()
+
+strips <- strip_themed(
+  text_x = elem_list_text(face = "bold", size = 10)
+)
+
 
 
 ############################## ABIGAIL WIDGET WORK ###############################
