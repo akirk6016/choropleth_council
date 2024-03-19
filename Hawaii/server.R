@@ -127,10 +127,15 @@ function(input, output, session) {
         filter(mokupuni == input$data) %>%
         dplyr::select(c(moku, mokupuni, county, geometry))
 
+
       multi_layer_reactive_rs <- crop(multi_layer_rs_dustin, extent(subset_ahupuaa))
+
       multi_layer_reactive_df <- as.data.frame(multi_layer_reactive_rs, xy = TRUE)
 
-      return(multi_layer_reactive_df)
+      multi_layer_raster_plot <- multi_layer_reactive_df %>%
+        dplyr::select(input$raster)
+
+      return(multi_layer_raster_plot)
     })
 
     # reactive_map3 <- reactive({

@@ -146,11 +146,18 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
              fluidRow(
                column(
                  width = 4,
-                 offset = 4,
+                 offset = 2,
                selectInput("data",
-                           "Choose county",
+                           "Choose Island",
                            choices = unique(data_sf_clean_dustin$mokupuni)),
                align = "center"
+               ),
+               column(
+                 width = 4,
+                 offset = 6,
+                 selectInput("raster",
+                             "Food or Carbon",
+                             choices = "Food", "Carbon"),
                )
 
              ),

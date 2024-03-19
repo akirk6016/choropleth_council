@@ -18,6 +18,7 @@ library(pdftools)
 library(ggwordcloud)
 library(MetBrewer)
 library(textdata)
+library(ggExtra)
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
