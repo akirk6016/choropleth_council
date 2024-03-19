@@ -190,7 +190,7 @@ function(input, output, session) {
         theme_bw() +
         ggtitle(req(input$data)) +
         theme(plot.title = element_text(face = "bold", hjust = 0.5))
-    })
+    }, bg = "transparent")
 
     ## Choropleths
 
@@ -240,20 +240,28 @@ function(input, output, session) {
       ggplot() +
         geom_sf(data = choropleth_carbon(), aes(fill = n_ones)) +
         scale_fill_gradientn(colors = c("lightgray","orange1", "orange2", "orange3", "orange4")) +
-        theme_minimal() +
-        ggtitle("Carbon Consideration") +
-        labs(fill = "Observation Count") +
-        theme(plot.title = element_text(face = "bold", hjust = 0.5))
+        theme_bw() +
+        ggtitle("Carbon Opportunity Distribution") +
+        labs(fill = "Observation\nCount", x = "Longitude", y = "Latitude") +
+        theme(plot.title = element_text(face = "bold", hjust = 0.5)) +
+        coord_sf(default_crs = sf::st_crs(3750)) +
+        facet_grid(~mokupuni) +
+        theme(strip.background = element_rect(fill = "transparent"),
+              strip.text = element_text(face = "bold", size = 13, colour = "black"))
     })
 
     output$choropleth_food <- renderPlot({
       ggplot() +
         geom_sf(data = choropleth_food(), aes(fill = n_ones)) +
         scale_fill_gradientn(colors = c("lightgray","lightgreen", "green", "forestgreen", "darkgreen")) +
-        theme_minimal() +
-        ggtitle("Food Consideration") +
-        labs(fill = "Observation Count") +
-        theme(plot.title = element_text(face = "bold", hjust = 0.5))
+        theme_bw() +
+        ggtitle("Food Opportunity Distribution") +
+        labs(fill = "Observation\nCount", x = "Longitude", y = "Latitude") +
+        theme(plot.title = element_text(face = "bold", hjust = 0.5)) +
+        coord_sf(default_crs = sf::st_crs(3750)) +
+        facet_grid(~mokupuni) +
+        theme(strip.background = element_rect(fill = "transparent"),
+              strip.text = element_text(face = "bold", size = 13, colour = "black"))
     })
 
 

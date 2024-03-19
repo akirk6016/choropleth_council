@@ -159,9 +159,10 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
              fluidRow(
                column(
                  width = 7,
-                 offset = 2,
+                 offset = 3,
               mainPanel(
-                "Land Coverage in the Hawai'ian Islands",)),
+                "Land Cover in the Hawai'ian Islands",)
+              ), align = "center",
                 column(
                 width = 8,
                 offset = 2,
@@ -177,6 +178,11 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
               ),
 
   tabPanel("Choropleths",
+           p("Spatial distribution of food and carbon prioritization on the Hawai'ian Islands. The choropleths
+             show the distribution of prioritization across the islands. The user can select the island and the
+             prioritization type to see the distribution of prioritization separated by ahupua'a on the selected island. The data used
+             to create the choropleths was developed by Nākoa Farrant, a PhD candidate at the Bren School of
+             Environmental Science & Management."),
            fluidPage(
              fluidRow(
                column(width = 6, selectInput("island", "Select Island", choices = unique(data_choropleths_dustin$mokupuni)), align = "center"),
@@ -185,14 +191,17 @@ to conducr a sentiment analysis on the interviewees experiences growing up on Pi
              ),
              fluidRow(
                column(
-                 width = 7,
-                 offset = 2,
+                 width = 10,
+                 offset = 1,
                  mainPanel(
-                   "Carbon and Food Prioritization Distributions within Hawai'ian Islands"
+                   "Carbon and Food Prioritization\nDistributions within the Hawai'ian Islands"
                  ),
+                 p(""),
                  plotOutput(outputId = "choropleth_food"),
+                 p(""),
                  plotOutput(outputId = "choropleth_carbon")
-               ),
+               ), align = "center",
+               style = 'width = 100%;'
 
              )
            )),
